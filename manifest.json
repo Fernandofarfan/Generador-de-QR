@@ -1,7 +1,7 @@
-{
-    "name": "Generador de QR Ultimate",
-    "short_name": "QR Pro",
-    "description": "Genera y escanea códigos QR offline",
+﻿{
+    "name": "Generador de QR",
+    "short_name": "QR Gen",
+    "description": "Herramienta simple para generar y escanear códigos QR",
     "start_url": "./index.html",
     "display": "standalone",
     "background_color": "#ffffff",
