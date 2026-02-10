@@ -119,7 +119,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
         .catch(err => {
-            document.getElementById('scanResult').innerText = "Error al iniciar cámara: " + err;
+            let msg = "Error al iniciar cámara.";
+            if (err.toString().includes("NotFound")) {
+                msg = "📷 No se encontró ninguna cámara en este dispositivo.";
+            } else if (err.toString().includes("NotAllowed")) {
+                msg = "🚫 Permiso de cámara denegado. Actívalo en el navegador.";
+            }
+            document.getElementById('scanResult').innerText = msg;
         });
     }
 
