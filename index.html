@@ -3,297 +3,319 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de QR</title>
-    <link rel="stylesheet" href="style.css">
+    <title>QR Suite Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#3b82f6">
-    <script type="text/javascript" src="lib/qr-code-styling.js"></script>
-    <script src="lib/html5-qrcode.js" type="text/javascript"></script>
-    <script src="lib/jszip.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="style.css">
+    <!-- Libraries -->
+    <script src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="lib/jszip.min.js"></script>
+    <script src="lib/jspdf.umd.min.js"></script>
 </head>
 <body>
-    <button id="langToggle" class="lang-toggle">🇪🇸</button>
-    <button id="darkModeToggle" class="mode-toggle">🌙</button>
-    <button id="installApp" class="install-btn" style="display: none;">📲 Instalar App</button>
 
-    <div class="main-container">
-        <div class="card editor-card">
-            <h1>Generador de QR</h1>
+    <header class="top-bar">
+        <div class="logo">
+            <span>🔲</span> QR Suite
+        </div>
+        <div class="top-actions">
+            <button id="installApp" class="action-btn" style="display:none;">⬇ App</button>
+            <button id="langToggle" class="icon-btn">🇪🇸</button>
+            <button id="darkModeToggle" class="icon-btn">🌙</button>
+        </div>
+    </header>
+
+    <div class="app-container">
+        
+        <!-- SIDEBAR MENU -->
+        <nav class="sidebar">
+            <div class="nav-group">
+                <h3>Básicos</h3>
+                <button class="nav-btn active" data-target="url">🔗 URL / Web</button>
+                <button class="nav-btn" data-target="text">📄 Texto</button>
+            </div>
             
-            <div class="tabs">
-                <button class="tab-btn active" data-target="url">🔗 Link</button>
-                <button class="tab-btn" data-target="wifi">📶 WiFi</button>
-                <button class="tab-btn" data-target="text">📝 Texto</button>
-                <button class="tab-btn" data-target="vcard">👤 Contacto</button>
-                <button class="tab-btn" data-target="whatsapp">💬 WhatsApp</button>
-                <button class="tab-btn" data-target="email">📧 Email</button>
-                <button class="tab-btn" data-target="event">📅 Evento</button>
-                <button class="tab-btn" data-target="bulk">📦 Masivo</button>
-                <button class="tab-btn scan-mode-btn" data-target="scan">📷 Escanear</button>
+            <div class="nav-group">
+                <h3>Contacto</h3>
+                <button class="nav-btn" data-target="vcard">👤 VCard</button>
+                <button class="nav-btn" data-target="location">📍 Mapa</button>
+                <button class="nav-btn" data-target="whatsapp">💬 WhatsApp</button>
+                <button class="nav-btn" data-target="email">📧 Email</button>
+                <button class="nav-btn" data-target="event">📅 Evento</button>
+            </div>
+            
+            <div class="nav-group">
+                <h3>Redes & Wifi</h3>
+                <button class="nav-btn" data-target="wifi">📶 WiFi</button>
+                <button class="nav-btn" data-target="social">📷 RRSS</button>
             </div>
 
-            <div id="formsContainer">
-                
-                <!-- Auto Generate Toggle -->
-                <div class="auto-gen-wrapper">
-                    <label class="switch">
-                        <input type="checkbox" id="autoGenToggle">
-                        <span class="slider round"></span>
+            <div class="nav-group">
+                <h3>Finanzas</h3>
+                <button class="nav-btn" data-target="crypto">₿ Cripto</button>
+                <button class="nav-btn" data-target="paypal">💳 PayPal</button>
+            </div>
+
+            <div class="nav-group">
+                <h3>Herramientas</h3>
+                <button class="nav-btn" data-target="bulk">📦 Masivo (ZIP/PDF)</button>
+                <button class="nav-btn" data-target="scan">📷 Escáner</button>
+            </div>
+        </nav>
+
+        <!-- MAIN FORM AREA -->
+        <main class="main-content">
+            
+            <!-- URL Form -->
+            <div id="form-url" class="form-section active">
+                <h2>URL / Sitio Web</h2>
+                <div class="input-group">
+                    <input type="url" id="urlInput" placeholder="https://ejemplo.com">
+                    <button id="shortenBtn" class="secondary-btn">✂ Acortar</button>
+                </div>
+            </div>
+
+            <!-- Text Form -->
+            <div id="form-text" class="form-section">
+                <h2>Texto Libre</h2>
+                <textarea id="textInput" placeholder="Escribe tu mensaje..."></textarea>
+            </div>
+
+            <!-- WIFI Form -->
+            <div id="form-wifi" class="form-section">
+                <h2>WiFi Acceso</h2>
+                <input type="text" id="wifiSSID" placeholder="SSID (Nombre de Red)">
+                <input type="password" id="wifiPass" placeholder="Contraseña">
+                <select id="wifiType">
+                    <option value="WPA">WPA/WPA2</option>
+                    <option value="WEP">WEP</option>
+                    <option value="nopass">Sin clave</option>
+                </select>
+            </div>
+
+            <!-- VCARD Form -->
+            <div id="form-vcard" class="form-section">
+                <h2>Tarjeta de Contacto</h2>
+                <input type="text" id="vcardName" placeholder="Nombre">
+                <input type="text" id="vcardLastname" placeholder="Apellido">
+                <input type="tel" id="vcardPhone" placeholder="Teléfono">
+                <input type="email" id="vcardEmail" placeholder="Email">
+            </div>
+
+            <!-- Geo Form (Replaces old logic if any, or simpler text) -->
+            <div id="form-location" class="form-section">
+                <h2>Ubicación (Google Maps)</h2>
+                <input type="text" id="locLat" placeholder="Latitud">
+                <input type="text" id="locLon" placeholder="Longitud">
+                <button id="locateMeBtn" class="secondary-btn">📍 Mi Ubicación</button>
+            </div>
+
+            <!-- WhatsApp Form -->
+            <div id="form-whatsapp" class="form-section">
+                <h2>WhatsApp Directo</h2>
+                <input type="tel" id="waPhone" placeholder="Número (+52...)">
+                <textarea id="waMessage" placeholder="Mensaje predefinido..."></textarea>
+            </div>
+
+            <!-- Email Form -->
+            <div id="form-email" class="form-section">
+                <h2>Enviar Correo</h2>
+                <input type="email" id="emailTo" placeholder="Para:">
+                <input type="text" id="emailSub" placeholder="Asunto:">
+                <textarea id="emailBody" placeholder="Mensaje..."></textarea>
+            </div>
+
+            <!-- Event Form -->
+            <div id="form-event" class="form-section">
+                <h2>Evento Calendario</h2>
+                <input type="text" id="eventTitle" placeholder="Título del Evento">
+                <input type="text" id="eventLoc" placeholder="Lugar">
+                <label>Inicio:</label>
+                <input type="datetime-local" id="eventStart">
+                <label>Fin:</label>
+                <input type="datetime-local" id="eventEnd">
+            </div>
+
+            <!-- Social Form -->
+            <div id="form-social" class="form-section">
+                <h2>Redes Sociales</h2>
+                <input type="text" id="socialUser" placeholder="Usuario">
+                <select id="socialPlat">
+                    <option value="instagram">Instagram</option>
+                    <option value="facebook">Facebook</option>
+                    <option value="twitter">X (Twitter)</option>
+                    <option value="tiktok">TikTok</option>
+                    <option value="linkedin">LinkedIn</option>
+                </select>
+            </div>
+
+            <!-- Crypto Form (NEW) -->
+            <div id="form-crypto" class="form-section">
+                <h2>Criptomonedas</h2>
+                <select id="cryptoType">
+                    <option value="bitcoin">Bitcoin (BTC)</option>
+                    <option value="ethereum">Ethereum (ETH)</option>
+                </select>
+                <input type="text" id="cryptoAddr" placeholder="Dirección de la Billetera">
+                <input type="number" id="cryptoAmount" placeholder="Monto (Opcional)">
+            </div>
+
+            <!-- PayPal Form (NEW) -->
+            <div id="form-paypal" class="form-section">
+                <h2>PayPal.Me</h2>
+                <input type="text" id="paypalUser" placeholder="Usuario (sin @)">
+                <div class="row">
+                    <select id="paypalCurrency">
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="MXN">MXN</option>
+                    </select>
+                    <input type="number" id="paypalAmount" placeholder="Monto (Opcional)">
+                </div>
+            </div>
+
+            <!-- Bulk Form -->
+            <div id="form-bulk" class="form-section">
+                <h2>Generación Masiva</h2>
+                <p class="hint">Pega un enlace o texto por línea.</p>
+                <textarea id="bulkInput" rows="6" placeholder="https://site1.com&#10;https://site2.com&#10;Pedro..."></textarea>
+                <p>Formatos de salida:</p>
+                <div class="row">
+                    <button id="bulkZipBtn" class="secondary-btn">📦 Descargar ZIP</button>
+                    <button id="bulkPdfBtn" class="secondary-btn">📄 Descargar PDF A4</button>
+                </div>
+            </div>
+
+            <!-- Scanner Section -->
+            <div id="scanner-section" class="form-section hidden-scan">
+                <h2>Escáner QR</h2>
+                <div id="reader"></div>
+                <div class="scan-controls">
+                    <button id="flashBtn" class="hidden">🔦 Linterna</button>
+                    <input type="file" id="fileScanInput" accept="image/*">
+                </div>
+                <p id="scanResult">Esperando cámara...</p>
+                <button id="copyScanBtn" class="secondary-btn" style="display:none;">Copiar Texto</button>
+            </div>
+
+            <!-- DESIGN ACCORDION -->
+            <details id="designSection" class="design-panel" open>
+                <summary>🎨 Personalizar Diseño</summary>
+                <div class="design-content">
+                    <div class="row">
+                        <div>
+                            <label>Puntos</label>
+                            <select id="dotsType">
+                                <option value="square">Cuadrado</option>
+                                <option value="dots">Puntos</option>
+                                <option value="rounded">Redondeado</option>
+                                <option value="classy">Elegante</option>
+                                <option value="classy-rounded">Elegante II</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Esquinas</label>
+                            <select id="cornersType">
+                                <option value="square">Cuadrada</option>
+                                <option value="dot">Punto</option>
+                                <option value="extra-rounded">Extra Redonda</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div>
+                            <label>Color</label>
+                            <input type="color" id="dotsColor" value="#000000">
+                        </div>
+                        <div>
+                            <label>Fondo</label>
+                            <input type="color" id="bgColor" value="#ffffff">
+                        </div>
+                    </div>
+
+                    <div class="logo-upload">
+                        <label>Logo Central</label>
+                        <input type="file" id="logoInput" accept="image/*">
+                        <div class="slider-group">
+                            <label>Tamaño</label>
+                            <input type="range" id="logoSize" min="0.1" max="0.5" step="0.05" value="0.4">
+                            <label>Margen</label>
+                            <input type="range" id="logoMargin" min="0" max="20" step="1" value="5">
+                        </div>
+                    </div>
+
+                    <label class="toggle">
+                        <input type="checkbox" id="useGradient">
+                        <span>Usar Gradiente</span>
                     </label>
-                    <span class="label-text">⚡ Generar Automáticamente</span>
-                </div>
-
-                <div class="form-section active" id="form-url">
-                    <div class="input-group">
-                        <label>Tu Enlace (URL)</label>
-                        <input type="text" id="urlInput" placeholder="https://mi-sitio-web.com" autocomplete="off">
-                    </div>
-                </div>
-
-                <!-- WiFi Form -->
-                <div class="form-section" id="form-wifi">
-                    <div class="input-group">
-                        <label>Nombre de Red (SSID)</label>
-                        <input type="text" id="wifiSSID" placeholder="Ej: MiCasa_5G">
-                    </div>
-                    <div class="input-group">
-                        <label>Contraseña</label>
-                        <input type="password" id="wifiPass" placeholder="Contraseña del WiFi">
-                    </div>
-                    <div class="input-group">
-                        <label>Seguridad</label>
-                        <select id="wifiType">
-                            <option value="WPA">WPA/WPA2</option>
-                            <option value="WEP">WEP</option>
-                            <option value="nopass">Sin Contraseña</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Texto Form -->
-                <div class="form-section" id="form-text">
-                    <div class="input-group">
-                        <label>Mensaje de Texto</label>
-                        <textarea id="textInput" rows="4" placeholder="Escribe lo que quieras..."></textarea>
-                    </div>
-                </div>
-
-                <!-- VCard Form -->
-                <div class="form-section" id="form-vcard">
-                    <div class="grid-2">
-                        <div class="input-group">
-                            <label>Nombre</label>
-                            <input type="text" id="vcardName" placeholder="Juan">
-                        </div>
-                        <div class="input-group">
-                            <label>Apellido</label>
-                            <input type="text" id="vcardLastname" placeholder="Pérez">
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>Teléfono</label>
-                        <input type="tel" id="vcardPhone" placeholder="+54 9 11 1234 5678">
-                    </div>
-                    <div class="input-group">
-                        <label>Email</label>
-                        <input type="email" id="vcardEmail" placeholder="juan@email.com">
-                    </div>
-                </div>
-
-                <!-- WhatsApp Form -->
-                <div class="form-section" id="form-whatsapp">
-                    <div class="input-group">
-                        <label>Número (con código de país)</label>
-                        <input type="tel" id="waPhone" placeholder="Ej: 5491112345678">
-                        <small>Sin espacios ni símbolos (+).</small>
-                    </div>
-                    <div class="input-group">
-                        <label>Mensaje</label>
-                        <textarea id="waMessage" rows="2" placeholder="Hola, me interesa tu producto..."></textarea>
-                    </div>
-                </div>
-
-                <!-- Email Form -->
-                <div class="form-section" id="form-email">
-                    <div class="input-group">
-                        <label>Para (Email)</label>
-                        <input type="email" id="emailTo" placeholder="contacto@empresa.com">
-                    </div>
-                    <div class="input-group">
-                        <label>Asunto</label>
-                        <input type="text" id="emailSub" placeholder="Consulta importante">
-                    </div>
-                    <div class="input-group">
-                        <label>Mensaje</label>
-                        <textarea id="emailBody" rows="4" placeholder="Escribe aquí..."></textarea>
-                    </div>
-                </div>
-
-                <!-- Event Form -->
-                <div class="form-section" id="form-event">
-                    <div class="input-group">
-                        <label>Título del Evento</label>
-                        <input type="text" id="eventTitle" placeholder="Fiesta de Cumpleaños">
-                    </div>
-                    <div class="input-group">
-                        <label>Ubicación</label>
-                        <input type="text" id="eventLoc" placeholder="Av. Siempre Viva 123">
-                    </div>
-                    <div class="grid-2">
-                        <div class="input-group">
-                            <label>Inicio</label>
-                            <input type="datetime-local" id="eventStart">
-                        </div>
-                        <div class="input-group">
-                            <label>Fin</label>
-                            <input type="datetime-local" id="eventEnd">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Bulk Form -->
-                <div class="form-section" id="form-bulk">
-                     <div class="input-group">
-                        <label>Lista de URLs o Textos (Uno por línea)</label>
-                        <textarea id="bulkInput" rows="6" placeholder="https://google.com&#10;https://facebook.com&#10;Juan Perez"></textarea>
-                     </div>
-                     <p style="font-size: 0.9em; color: gray;">* Se generará un archivo ZIP con todos los QRs.</p>
-                </div>
-
-                <!-- Scanner Section (New) -->
-                <div class="form-section" id="form-scan">
-                     <div id="reader"></div>
-                     <div class="scan-controls" style="text-align: center; margin-top: 10px;">
-                        <button id="flashBtn" class="btn secondary" style="display:none;">🔦 Linterna</button>
-                     </div>
-                     <p id="scanResult" class="scan-result">Esperando código...</p>
-                     <button id="copyScanBtn" style="display:none;" class="btn secondary">Copiar Resultado</button>
-                </div>
-
-            </div>
-
-            <!-- Personalización Visual (Solo visible si no es scan) -->
-            <div id="designSection">
-                <hr class="divider">
-                <h3>🎨 Diseño</h3>
-
-                <div class="options-grid">
-                    <div class="option-item">
-                        <label>Forma Puntos</label>
-                        <select id="dotsType">
-                            <option value="square">Cuadrados (Clásico)</option>
-                            <option value="rounded">Redondeados</option>
-                            <option value="dots">Puntitos</option>
-                            <option value="classy">Elegante</option>
-                            <option value="extra-rounded">Muy Redondo</option>
-                        </select>
-                    </div>
-                    <div class="option-item">
-                        <label>Forma Esquinas</label>
-                        <select id="cornersType">
-                            <option value="square">Cuadradas</option>
-                            <option value="dot">Punto</option>
-                            <option value="extra-rounded">Redondeadas</option>
-                        </select>
-                    </div>
-                    <div class="option-item">
-                        <label>Color Puntos</label>
-                        <input type="color" id="dotsColor" value="#000000">
-                    </div>
-
-                    <!-- Gradient Options -->
-                     <div class="option-item full-width" style="margin-top: 10px;">
-                        <label style="display:inline-flex; align-items:center; gap:8px;">
-                            <input type="checkbox" id="useGradient"> 🌈 Usar Degradado Premium
-                        </label>
-                     </div>
-                     
-                     <div id="gradientSection" class="options-grid full-width hidden">
-                        <div class="option-item">
-                            <label>Tipo</label>
+                    
+                    <div id="gradientSection" class="hidden">
+                        <div class="row">
                             <select id="gradientType">
                                 <option value="linear">Lineal</option>
                                 <option value="radial">Radial</option>
                             </select>
+                            <input type="number" id="gradientRotation" value="45" placeholder="Ángulo (0-360)">
                         </div>
-                        <div class="option-item">
-                            <label>Color 2</label>
-                            <input type="color" id="gradientColor2" value="#3b82f6">
-                        </div>
-                        <div class="option-item">
-                            <label>Rotación (°)</label>
-                            <input type="number" id="gradientRotation" value="45" min="0" max="360">
-                        </div>
-                     </div>
+                        <label>Color Final</label>
+                        <input type="color" id="gradientColor2" value="#0000ff">
+                    </div>
 
-                    <div class="option-item">
-                        <label>Color Fondo</label>
-                        <input type="color" id="bgColor" value="#ffffff">
-                    </div>
-                    <div class="option-item">
-                        <label>Corrección de Error</label>
-                        <select id="errorLevel">
-                            <option value="L">Bajo (7%)</option>
-                            <option value="M" selected>Medio (15%)</option>
-                            <option value="Q">Alto (25%)</option>
-                            <option value="H">Máximo (30%)</option>
-                        </select>
-                    </div>
-                    <div class="option-item full-width">
-                        <label>Logo (Opcional)</label>
-                        <input type="file" id="logoInput" accept="image/*">
-                    </div>
-                    
-                    <div class="option-item" id="logoSizeGroup" style="display:none;">
-                        <label>Tamaño Logo</label>
-                        <input type="range" id="logoSize" min="0.1" max="0.5" step="0.05" value="0.4">
-                    </div>
-                     <div class="option-item" id="logoMarginGroup" style="display:none;">
-                        <label>Margen Logo</label>
-                        <input type="range" id="logoMargin" min="0" max="20" step="1" value="0">
-                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="autoGenToggle" checked>
+                        <span>Vista Previa Automática</span>
+                    </label>
+                    <label>Corrección: <select id="errorLevel"><option value="L">Baja</option><option value="M" selected>Media</option><option value="Q">Alta</option><option value="H">Max</option></select></label>
+                </div>
+            </details>
+
+        </main>
+
+        <!-- PREVIEW SIDEBAR -->
+        <aside class="preview-area">
+            <div class="qr-preview-container">
+                <div id="qrcode"></div>
+            </div>
+            
+            <div class="actions">
+                <button id="generateBtn" class="primary-btn">🔄 Generar</button>
+                <div class="download-group">
+                    <select id="downloadFormat">
+                        <option value="png">PNG</option>
+                        <option value="jpeg">JPG</option>
+                        <option value="svg">SVG</option>
+                    </select>
+                    <button id="downloadBtn" class="action-btn">⬇ Descargar</button>
+                </div>
+                <button id="shareBtn" class="action-btn outline">🔗 Compartir</button>
+            </div>
+
+            <!-- SAVED ITEMS & HISTORY -->
+            <div class="saved-section">
+                <div class="tabs-mini">
+                    <button class="mini-tab active" data-view="history">Historial</button>
+                    <button class="mini-tab" data-view="presets">Estilos</button>
                 </div>
                 
-                <div class="presets-section" style="margin-top: 20px;">
-                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
-                        <h4>💾 Mis Estilos</h4>
-                        <button id="savePresetBtn" class="text-btn" style="font-size:0.8em;">+ Guardar Actual</button>
-                    </div>
-                    <div id="presetsList" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+                <div id="view-history" class="list-view">
+                    <button id="clearHistory" class="text-btn">Borrar todo</button>
+                    <ul id="historyList"></ul>
                 </div>
 
-                <div class="actions">
-                    <button id="generateBtn" class="btn primary">Generar QR</button>
+                <div id="view-presets" class="list-view hidden">
+                    <button id="savePresetBtn" class="secondary-btn small">+ Nuevo Estilo</button>
+                    <div id="presetsList" class="presets-grid"></div>
                 </div>
             </div>
-        </div>
+        </aside>
 
-        <div class="card preview-card">
-            <div id="qrcode"></div>
-            
-            <div class="download-section">
-                <select id="downloadFormat" class="format-select">
-                    <option value="png">PNG</option>
-                    <option value="jpeg">JPEG</option>
-                    <option value="svg">SVG</option>
-                    <option value="webp">WEBP</option>
-                </select>
-                <div class="btn-group-horizontal">
-                    <button id="downloadBtn" class="btn success" disabled>⬇ Descargar</button>
-                    <button id="shareBtn" class="btn secondary" disabled>🔗 Compartir</button>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- Sección de Historial -->
-    <div class="history-container">
-        <h3>Historial Reciente</h3>
-        <ul id="historyList"></ul>
-        <button id="clearHistory" class="text-btn">Borrar historial</button>
-    </div>
+    <!-- TOAST -->
+    <div id="toast"></div>
 
     <script src="script.js"></script>
-    <div id="toast" class="toast">Mensaje</div>
 </body>
 </html>
