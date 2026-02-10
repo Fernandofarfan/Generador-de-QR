@@ -42,11 +42,16 @@ document.addEventListener('DOMContentLoaded', () => {
         paypalCurrency: document.getElementById('paypalCurrency'),
         paypalAmount: document.getElementById('paypalAmount'),
         // Bulk
-        bulk: document.getElementById('bulkInput')
+        bulk: document.getElementById('bulkInput'),
+        // UTM
+        utmSource: document.getElementById('utmSource'),
+        utmMedium: document.getElementById('utmMedium'),
+        utmCampaign: document.getElementById('utmCampaign')
     };
 
     // Design
     const logoInput = document.getElementById('logoInput');
+    const removeBgToggle = document.getElementById('removeBgToggle');
     const logoSize = document.getElementById('logoSize');
     const logoMargin = document.getElementById('logoMargin');
     
@@ -97,7 +102,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // === CORE: Data Builder ===
     function getQRData() {
         switch(currentType) {
-            case 'url': return inputs.url.value.trim();
+            case 'url': 
+                let url = inputs.url.value.trim();
+                if(!url) return null;
+                // Add UTM
+                const src = inputs.utmSource.value.trim();
+                const med = inputs.utmMedium.value.trim();
+                const cmp = inputs.utmCampaign.value.trim();
+                if(src || med || cmp) {
+                    try {
+                        const urlObj = new URL(url);
+                        if(src) urlObj.searchParams.set('utm_source', src);
+                        if(med) urlObj.searchParams.set('utm_medium', med);
+                        if(cmp) urlObj.searchParams.set('utm_campaign', cmp);
+                        return urlObj.toString();
+                    } catch(e) { return url; }
+                }
+                return url;
             case 'text': return inputs.text.value.trim();
             case 'wifi':
                 if(!inputs.ssid.value) return null;
@@ -140,9 +161,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // === Logic: Update QR ===
     async function updateQR(fromAuto = false) {
-        if(currentType === 'bulk') return; // Bulk handled separately
+        if(currentType === 'bulk') return; 
 
         const data = getQRData();
+        updateDensityUI(data);
+
         if(!data) {
             if(!fromAuto) showToast("Faltan datos");
             return;
@@ -151,6 +174,35 @@ document.addEventListener('DOMContentLoaded', () => {
         const options = getStyles();
         qrCode.update({ ...options, data: data });
         if(!fromAuto) saveHistory(data, currentType);
+    }
+
+    function updateDensityUI(data) {
+        const wrap = document.getElementById('densityWrapper');
+        if(!data) { wrap.classList.add('hidden'); return; }
+        
+        wrap.classList.remove('hidden');
+        const len = data.length;
+        const ecc = document.getElementById('errorLevel').value;
+        const fill = document.getElementById('densityFill');
+        const label = document.getElementById('densityLabel');
+
+        // Approximate sweet spots for scan speed
+        let limit = ecc === 'L' ? 180 : (ecc === 'M' ? 150 : (ecc === 'Q' ? 100 : 70));
+        
+        let percent = Math.min((len / (limit * 2)) * 100, 100);
+        fill.style.width = `${percent}%`;
+        fill.className = 'density-fiil'; // base class if needed, or clear
+        
+        if(percent < 40) {
+            fill.classList.add('density-low');
+            label.innerText = `Densidad: Óptima` ;
+        } else if(percent < 85) {
+            fill.classList.add('density-med');
+            label.innerText = `Densidad: Media`;
+        } else {
+            fill.classList.add('density-high');
+            label.innerText = `Complejidad Alta (Reduce datos)`;
+        }
     }
 
     function getStyles() {
@@ -299,38 +351,152 @@ document.addEventListener('DOMContentLoaded', () => {
                 inputs.text.value = text;
             }
             // Trigger UI switch
-            document.querySelector(`[data-target="${currentType}"]`).click();
+            const btn = document.querySelector(`[data-target="${currentType}"]`);
+            if(btn) btn.click();
             setTimeout(() => updateQR(false), 500);
             showToast("🔗 Datos recibidos");
         }
     }
 
     generateBtn.addEventListener('click', () => updateQR(false));
+
+    // Mini Tabs (History/Presets)
+    const miniTabs = document.querySelectorAll('.mini-tab');
+    miniTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            miniTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            const view = tab.dataset.view;
+            if(view === 'history') {
+                document.getElementById('view-history').classList.remove('hidden');
+                document.getElementById('view-presets').classList.add('hidden');
+            } else {
+                document.getElementById('view-history').classList.add('hidden');
+                document.getElementById('view-presets').classList.remove('hidden');
+            }
+        });
+    });
     
     // Listeners for Live Update
     document.querySelectorAll('input, select, textarea').forEach(el => {
-        if(el.id === 'logoInput' || el.type === 'file') return;
+        if(el.id === 'logoInput' || el.type === 'file' || el.id === 'removeBgToggle') return;
         el.addEventListener('input', () => {
             if(document.getElementById('autoGenToggle').checked) updateQR(true);
         }); 
     });
 
-    logoInput.addEventListener('change', e => {
+    logoInput.addEventListener('change', async e => {
         const file = e.target.files[0];
         if(file) {
-            const reader = new FileReader();
-            reader.onload = () => { currentLogo = reader.result; updateQR(true); };
-            reader.readAsDataURL(file);
+            currentLogo = await processLogo(file);
+            updateQR(true);
+        }
+    });
+    
+    removeBgToggle.addEventListener('change', async () => {
+        if(logoInput.files[0]) {
+            currentLogo = await processLogo(logoInput.files[0]);
+            updateQR(true);
         }
     });
 
-    // Helper: Toast
-    function showToast(msg) {
-        toast.innerText = msg;
-        toast.classList.add('show');
-        setTimeout(()=>toast.classList.remove('show'), 3000);
+    async function processLogo(file) {
+        const useRemove = removeBgToggle.checked;
+        return new Promise(resolve => {
+            if(!useRemove) {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(file);
+            } else {
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    const imageData = ctx.getImageData(0,0,img.width,img.height);
+                    const data = imageData.data;
+                    // White threshold
+                    for(let i=0; i<data.length; i+=4) {
+                        const r=data[i], g=data[i+1], b=data[i+2];
+                        if(r>230 && g>230 && b>230) data[i+3] = 0;
+                    }
+                    ctx.putImageData(imageData, 0,0);
+                    resolve(canvas.toDataURL());
+                    URL.revokeObjectURL(url);
+                };
+                img.src = url;
+            }
+        });
+    }
+
+    // History
+    function saveHistory(data, type) {
+        let hist = JSON.parse(localStorage.getItem('qrHistory') || '[]');
+        if(hist[0]?.data === data) return;
+        hist.unshift({data, type, date: new Date().toLocaleTimeString()});
+        if(hist.length > 20) hist.pop();
+        localStorage.setItem('qrHistory', JSON.stringify(hist));
+        renderList('historyList', hist);
     }
     
+    // Presets
+    function loadPresets() {
+        let presets = JSON.parse(localStorage.getItem('qrPresets') || '{}');
+        // Load Defaults if empty
+        if(Object.keys(presets).length === 0) {
+            presets = {
+                "Instagram": { dotsType: "classy", dotsColor: "#E1306C", bgColor: "#ffffff", cornersType: "extra-rounded" },
+                "Azul Corp": { dotsType: "square", dotsColor: "#003366", bgColor: "#ffffff", cornersType: "square" },
+                "Neon": { dotsType: "dots", dotsColor: "#FF5733", bgColor: "#111827", cornersType: "dot" }
+            };
+            localStorage.setItem('qrPresets', JSON.stringify(presets));
+        }
+
+        const list = document.getElementById('presetsList');
+        if(!list) return; 
+        list.innerHTML = '';
+        Object.keys(presets).forEach(k => {
+            const btn = document.createElement('button');
+            btn.className = 'history-item'; 
+            btn.style.display = 'inline-block';
+            btn.style.marginRight = '5px';
+            btn.style.cursor = 'pointer';
+            btn.innerText = k;
+            btn.onclick = () => applyPreset(presets[k]);
+            list.appendChild(btn);
+        });
+    }
+
+    function applyPreset(style) {
+        if(style.dotsType) document.getElementById('dotsType').value = style.dotsType;
+        if(style.dotsColor) document.getElementById('dotsColor').value = style.dotsColor;
+        if(style.bgColor) document.getElementById('bgColor').value = style.bgColor;
+        if(style.cornersType) document.getElementById('cornersType').value = style.cornersType;
+        updateQR(true);
+        showToast("🎨 Estilo aplicado");
+    }
+    
+    function renderList(id, arr) {
+        const list = document.getElementById(id);
+        if(!list) return;
+        list.innerHTML = '';
+        arr.forEach(i => {
+            const li = document.createElement('li');
+            li.className = 'history-item';
+            li.innerText = `${i.type}: ${i.data.substring(0,20)}`;
+            li.onclick = () => { 
+                /* Restore logic could go here, for now just copy data */
+                if(navigator.clipboard) navigator.clipboard.writeText(i.data);
+                showToast("Copiado al portapapeles");
+            };
+            list.appendChild(li);
+        });
+    }
+
     // Scanner
     let html5QrCode;
     let isFlashOn = false;
@@ -341,10 +507,13 @@ document.addEventListener('DOMContentLoaded', () => {
             (decoded) => {
                 document.getElementById('scanResult').innerHTML = `Escanado: <a href="${decoded}">${decoded}</a>`;
                 showToast("✅ QR Detectado");
-                // Stop automatically? User preference maybe.
             }
         ).then(() => {
-            document.getElementById('flashBtn').classList.remove('hidden');
+            const flashBtn = document.getElementById('flashBtn');
+            if(flashBtn) flashBtn.classList.remove('hidden');
+        }).catch(err => {
+            console.error(err);
+            document.getElementById('scanResult').innerText = "Error accediendo a cámara";
         });
     }
     
@@ -354,45 +523,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    document.getElementById('flashBtn').addEventListener('click', () => {
-        isFlashOn = !isFlashOn;
-        html5QrCode.applyVideoConstraints({ advanced: [{ torch: isFlashOn }] });
-    });
-
-    // History & Presets (Simplified for brevity but functional)
-    function saveHistory(data, type) {
-        // ... (Same logic as before, just ensuring it works with new layout)
-        let hist = JSON.parse(localStorage.getItem('qrHistory') || '[]');
-        if(hist[0]?.data === data) return;
-        hist.unshift({data, type, date: new Date().toLocaleTimeString()});
-        if(hist.length > 20) hist.pop();
-        localStorage.setItem('qrHistory', JSON.stringify(hist));
-        renderList('historyList', hist);
-    }
-
-    function loadPresets() {
-        const presets = JSON.parse(localStorage.getItem('qrPresets') || '{}');
-        const list = document.getElementById('presetsList');
-        list.innerHTML = '';
-        Object.keys(presets).forEach(k => {
-            const btn = document.createElement('button');
-            btn.className = 'secondary-btn small';
-            btn.innerText = k;
-            btn.onclick = () => applyPreset(presets[k]);
-            list.appendChild(btn);
+    const flashBtn = document.getElementById('flashBtn');
+    if(flashBtn) {
+        flashBtn.addEventListener('click', () => {
+            isFlashOn = !isFlashOn;
+            html5QrCode.applyVideoConstraints({ advanced: [{ torch: isFlashOn }] });
         });
     }
-    
-    function renderList(id, arr) {
-        const list = document.getElementById(id);
-        list.innerHTML = '';
-        arr.forEach(i => {
-            const li = document.createElement('li');
-            li.className = 'history-item';
-            li.innerText = `${i.type}: ${i.data.substring(0,20)}`;
-            li.onclick = () => { /* restore logic */ };
-            list.appendChild(li);
-        });
+
+    // Helper: Toast
+    function showToast(msg) {
+        toast.innerText = msg;
+        toast.classList.add('show');
+        setTimeout(()=>toast.classList.remove('show'), 3000);
     }
     
     // Init History Render

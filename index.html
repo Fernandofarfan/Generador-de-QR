@@ -74,6 +74,15 @@
                     <input type="url" id="urlInput" placeholder="https://ejemplo.com">
                     <button id="shortenBtn" class="secondary-btn">✂ Acortar</button>
                 </div>
+                
+                <details class="utm-accordion">
+                    <summary>📈 Opciones de Rastreo (UTM)</summary>
+                    <div class="utm-grid">
+                        <input type="text" id="utmSource" placeholder="Fuente (ej. instagram)">
+                        <input type="text" id="utmMedium" placeholder="Medio (ej. story)">
+                        <input type="text" id="utmCampaign" placeholder="Campaña (ej. verano2026)">
+                    </div>
+                </details>
             </div>
 
             <!-- Text Form -->
@@ -238,6 +247,10 @@
                     <div class="logo-upload">
                         <label>Logo Central</label>
                         <input type="file" id="logoInput" accept="image/*">
+                        <label class="toggle-sm">
+                            <input type="checkbox" id="removeBgToggle">
+                            <span>Quitar fondo blanco del logo</span>
+                        </label>
                         <div class="slider-group">
                             <label>Tamaño</label>
                             <input type="range" id="logoSize" min="0.1" max="0.5" step="0.05" value="0.4">
@@ -277,6 +290,10 @@
         <aside class="preview-area">
             <div class="qr-preview-container">
                 <div id="qrcode"></div>
+                <div id="densityWrapper" class="density-wrapper hidden">
+                    <span id="densityLabel">Densidad: Baja</span>
+                    <div class="density-bar"><div id="densityFill"></div></div>
+                </div>
             </div>
             
             <div class="actions">

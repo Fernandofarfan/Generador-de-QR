@@ -250,3 +250,69 @@ details[open] summary::after { transform: rotate(180deg); }
 @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0px; opacity: 0;} }
 .hidden { display: none !important; }
 .hidden-scan { display: none; }
+
+/* UTM BUILDER */
+.utm-accordion {
+    margin-top: 15px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-main);
+}
+.utm-accordion summary {
+    padding: 10px 15px;
+    font-size: 0.9em;
+    color: var(--text-muted);
+}
+.utm-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    padding: 15px;
+    border-top: 1px solid var(--border);
+}
+.utm-grid input { margin-bottom: 0; font-size: 0.85em; }
+
+/* LOGO REMOVER */
+.toggle-sm {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85em;
+    margin-bottom: 10px;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+/* DENSITY CHECKER */
+.density-wrapper {
+    width: 100%;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+#densityLabel {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.density-bar {
+    width: 80%;
+    height: 6px;
+    background: var(--bg-main);
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+#densityFill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+/* Density Colors */
+.density-low { background-color: #22c55e; } /* Green */
+.density-med { background-color: #eab308; } /* Yellow */
+.density-high { background-color: #ef4444; } /* Red */
