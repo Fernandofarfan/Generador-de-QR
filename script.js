@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabs = document.querySelectorAll('.tab-btn');
     const forms = document.querySelectorAll('.form-section');
     
+    // Inputs (Extended with WA and Email)
     const inputs = {
         url: document.getElementById('urlInput'),
         ssid: document.getElementById('wifiSSID'),
@@ -12,19 +13,29 @@ document.addEventListener('DOMContentLoaded', () => {
         vFn: document.getElementById('vcardName'),
         vLn: document.getElementById('vcardLastname'),
         vTel: document.getElementById('vcardPhone'),
-        vEmail: document.getElementById('vcardEmail')
+        vEmail: document.getElementById('vcardEmail'),
+        // WA
+        waPhone: document.getElementById('waPhone'),
+        waMessage: document.getElementById('waMessage'),
+        // Email
+        emailTo: document.getElementById('emailTo'),
+        emailSub: document.getElementById('emailSub'),
+        emailBody: document.getElementById('emailBody')
     };
 
     const dotsSelect = document.getElementById('dotsType');
     const cornersSelect = document.getElementById('cornersType');
     const dotsColor = document.getElementById('dotsColor');
     const bgColor = document.getElementById('bgColor');
+    const errorLevel = document.getElementById('errorLevel'); // New
     const logoInput = document.getElementById('logoInput');
     
     const generateBtn = document.getElementById('generateBtn');
     const downloadBtn = document.getElementById('downloadBtn');
+    const shareBtn = document.getElementById('shareBtn'); // New
     const formatSelect = document.getElementById('downloadFormat');
     const darkModeBtn = document.getElementById('darkModeToggle');
+    const autoGenToggle = document.getElementById('autoGenToggle'); // New
     
     const historyList = document.getElementById('historyList');
     const clearHistoryBtn = document.getElementById('clearHistory');
@@ -159,6 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dotsOptions: { color: "#000000", type: "square" },
         cornersSquareOptions: { type: "square" },
         backgroundOptions: { color: "#ffffff" },
+        qrOptions: { errorCorrectionLevel: 'M' },
         imageOptions: { crossOrigin: "anonymous", margin: 10 }
     });
     qrCode.append(document.getElementById("qrcode"));
@@ -195,17 +207,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 const email = inputs.vEmail.value.trim();
                 if(!n && !ln) return null;
                 return `BEGIN:VCARD\nVERSION:3.0\nN:${ln};${n};;;\nFN:${n} ${ln}\nTEL;TYPE=CELL:${tel}\nEMAIL:${email}\nEND:VCARD`;
+            case 'whatsapp':
+                const phone = inputs.waPhone.value.trim();
+                const msg = inputs.waMessage.value.trim();
+                if(!phone) return null;
+                return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+            case 'email':
+                const to = inputs.emailTo.value.trim();
+                const sub = inputs.emailSub.value.trim();
+                const body = inputs.emailBody.value.trim();
+                if(!to) return null;
+                return `mailto:${to}?subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(body)}`;
             default:
                 return null;
         }
     }
 
     // Generate/Update
-    function updateQR() {
+    function updateQR(fromAuto = false) {
         const data = getQRData();
         
         if (!data) {
-            alert("Por favor completa los campos necesarios.");
+            if(!fromAuto) alert("Por favor completa los campos necesarios.");
             return;
         }
 
@@ -221,11 +244,16 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             backgroundOptions: {
                 color: bgColor.value
+            },
+            qrOptions: {
+                errorCorrectionLevel: errorLevel.value
             }
         });
 
         downloadBtn.disabled = false;
-        saveToHistory(data);
+        shareBtn.disabled = false;
+        // Sólo guardar histórico si es manual o cada X tiempo (aqui lo dejamos manual)
+        if(!fromAuto) saveToHistory(data);
     }
 
     downloadBtn.addEventListener('click', () => {
@@ -235,15 +263,41 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    shareBtn.addEventListener('click', async () => {
+        if (!navigator.share) {
+            alert("Tu navegador no soporta compartir nativamente.");
+            return;
+        }
+        
+        try {
+            const blob = await qrCode.getRawData('png');
+            if (blob) {
+                const file = new File([blob], "qr.png", { type: "image/png" });
+                await navigator.share({
+                    title: 'Mi Código QR',
+                    text: 'Mira este QR generado con QR Gen',
+                    files: [file]
+                });
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    });
+
     // History
     function saveToHistory(data) {
         let history = JSON.parse(localStorage.getItem('qrHistory') || '[]');
         const display = data.length > 40 ? data.substring(0, 40) + '...' : data;
         
-        // Avoid dupes at top
-        if (history.length > 0 && history[0].data === data) return;
+        if (history.length > 0 && history[0].data === data) return; // No dupes recent
 
-        history.unshift({ data: data, display: display, type: currentType });
+        let typeIcon = '🔗';
+        if(currentType === 'wifi') typeIcon = '📶';
+        else if(currentType === 'vcard') typeIcon = '👤';
+        else if(currentType === 'whatsapp') typeIcon = '💬';
+        else if(currentType === 'email') typeIcon = '📧';
+
+        history.unshift({ data: data, display: display, type: currentType, icon: typeIcon });
         if (history.length > 10) history.pop();
 
         localStorage.setItem('qrHistory', JSON.stringify(history));
@@ -257,8 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
         history.forEach(item => {
             const li = document.createElement('li');
             li.className = 'history-item';
-            const icon = item.type === 'wifi' ? '📶' : item.type === 'vcard' ? '👤' : '🔗';
-            li.innerHTML = `<strong>${icon}</strong> ${item.display}`;
+            li.innerHTML = `<strong>${item.icon || '🔗'}</strong> ${item.display}`;
             
             li.addEventListener('click', () => {
                 qrCode.update({ data: item.data });
@@ -272,8 +325,21 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHistory();
     });
 
-    generateBtn.addEventListener('click', updateQR);
+    generateBtn.addEventListener('click', () => updateQR(false));
     
+    // Auto Gen Logic
+    const allInputs = document.querySelectorAll('input, select, textarea');
+    allInputs.forEach(el => {
+        // Skip some inputs that don't trigger regeneration
+        if(el.id === 'downloadFormat' || el.id === 'logoInput') return;
+        
+        el.addEventListener('input', () => {
+            if(autoGenToggle.checked) {
+                updateQR(true);
+            }
+        });
+    });
+
     // Initial Render
     renderHistory();
 });

@@ -23,11 +23,22 @@
                 <button class="tab-btn" data-target="wifi">📶 WiFi</button>
                 <button class="tab-btn" data-target="text">📝 Texto</button>
                 <button class="tab-btn" data-target="vcard">👤 Contacto</button>
+                <button class="tab-btn" data-target="whatsapp">💬 WhatsApp</button>
+                <button class="tab-btn" data-target="email">📧 Email</button>
                 <button class="tab-btn scan-mode-btn" data-target="scan">📷 Escanear</button>
             </div>
 
             <div id="formsContainer">
                 
+                <!-- Auto Generate Toggle -->
+                <div class="auto-gen-wrapper">
+                    <label class="switch">
+                        <input type="checkbox" id="autoGenToggle">
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="label-text">⚡ Generar Automáticamente</span>
+                </div>
+
                 <div class="form-section active" id="form-url">
                     <div class="input-group">
                         <label>Tu Enlace (URL)</label>
@@ -85,6 +96,35 @@
                     </div>
                 </div>
 
+                <!-- WhatsApp Form -->
+                <div class="form-section" id="form-whatsapp">
+                    <div class="input-group">
+                        <label>Número (con código de país)</label>
+                        <input type="tel" id="waPhone" placeholder="Ej: 5491112345678">
+                        <small>Sin espacios ni símbolos (+).</small>
+                    </div>
+                    <div class="input-group">
+                        <label>Mensaje</label>
+                        <textarea id="waMessage" rows="2" placeholder="Hola, me interesa tu producto..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Email Form -->
+                <div class="form-section" id="form-email">
+                    <div class="input-group">
+                        <label>Para (Email)</label>
+                        <input type="email" id="emailTo" placeholder="contacto@empresa.com">
+                    </div>
+                    <div class="input-group">
+                        <label>Asunto</label>
+                        <input type="text" id="emailSub" placeholder="Consulta importante">
+                    </div>
+                    <div class="input-group">
+                        <label>Mensaje</label>
+                        <textarea id="emailBody" rows="4" placeholder="Escribe aquí..."></textarea>
+                    </div>
+                </div>
+
                 <!-- Scanner Section (New) -->
                 <div class="form-section" id="form-scan">
                      <div id="reader"></div>
@@ -126,6 +166,15 @@
                         <label>Color Fondo</label>
                         <input type="color" id="bgColor" value="#ffffff">
                     </div>
+                    <div class="option-item">
+                        <label>Corrección de Error</label>
+                        <select id="errorLevel">
+                            <option value="L">Bajo (7%)</option>
+                            <option value="M" selected>Medio (15%)</option>
+                            <option value="Q">Alto (25%)</option>
+                            <option value="H">Máximo (30%)</option>
+                        </select>
+                    </div>
                     <div class="option-item full-width">
                         <label>Logo (Opcional)</label>
                         <input type="file" id="logoInput" accept="image/*">
@@ -148,7 +197,10 @@
                     <option value="svg">SVG</option>
                     <option value="webp">WEBP</option>
                 </select>
-                <button id="downloadBtn" class="btn secondary" disabled>⬇ Descargar</button>
+                <div class="btn-group-horizontal">
+                    <button id="downloadBtn" class="btn success" disabled>⬇ Descargar</button>
+                    <button id="shareBtn" class="btn secondary" disabled>🔗 Compartir</button>
+                </div>
             </div>
         </div>
     </div>
