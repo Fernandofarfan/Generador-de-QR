@@ -5,7 +5,8 @@ const urlsToCache = [
   './script.js',
   './manifest.json',
   './lib/qr-code-styling.js',
-  './lib/html5-qrcode.js'
+  './lib/html5-qrcode.js',
+  './lib/jszip.min.js'
 ];
 
 self.addEventListener('install', event => {

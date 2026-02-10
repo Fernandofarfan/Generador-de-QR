@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // UI References
+    // --- UI References ---
     const tabs = document.querySelectorAll('.tab-btn');
     const forms = document.querySelectorAll('.form-section');
     
-    // Inputs (Extended with WA and Email)
+    // Inputs Map
     const inputs = {
         url: document.getElementById('urlInput'),
         ssid: document.getElementById('wifiSSID'),
@@ -14,175 +14,78 @@ document.addEventListener('DOMContentLoaded', () => {
         vLn: document.getElementById('vcardLastname'),
         vTel: document.getElementById('vcardPhone'),
         vEmail: document.getElementById('vcardEmail'),
-        // WA
         waPhone: document.getElementById('waPhone'),
         waMessage: document.getElementById('waMessage'),
-        // Email
         emailTo: document.getElementById('emailTo'),
         emailSub: document.getElementById('emailSub'),
         emailBody: document.getElementById('emailBody'),
-        // Event
         eventTitle: document.getElementById('eventTitle'),
         eventLoc: document.getElementById('eventLoc'),
         eventStart: document.getElementById('eventStart'),
-        eventEnd: document.getElementById('eventEnd')
+        eventEnd: document.getElementById('eventEnd'),
+        bulk: document.getElementById('bulkInput')
     };
 
+    // Design Inputs
     const dotsSelect = document.getElementById('dotsType');
     const cornersSelect = document.getElementById('cornersType');
     const dotsColor = document.getElementById('dotsColor');
     const bgColor = document.getElementById('bgColor');
     const errorLevel = document.getElementById('errorLevel');
     const logoInput = document.getElementById('logoInput');
+    const logoSize = document.getElementById('logoSize');
+    const logoMargin = document.getElementById('logoMargin');
 
-    // Gradient Inputs
+    // Gradient
     const useGradient = document.getElementById('useGradient');
     const gradientSection = document.getElementById('gradientSection');
     const gradientType = document.getElementById('gradientType');
     const gradientColor2 = document.getElementById('gradientColor2');
     const gradientRotation = document.getElementById('gradientRotation');
     
+    // Buttons & Toggles
     const generateBtn = document.getElementById('generateBtn');
     const downloadBtn = document.getElementById('downloadBtn');
     const shareBtn = document.getElementById('shareBtn');
     const formatSelect = document.getElementById('downloadFormat');
     const darkModeBtn = document.getElementById('darkModeToggle');
     const autoGenToggle = document.getElementById('autoGenToggle');
+    const langToggle = document.getElementById('langToggle');
     
+    // Scanner
+    const flashBtn = document.getElementById('flashBtn');
+    const scanTabBtn = document.querySelector('[data-target="scan"]');
+    const fileScanBtn = document.getElementById('fileScanInput');
+    const scanResult = document.getElementById('scanResult');
+
+    // Lists
     const historyList = document.getElementById('historyList');
     const clearHistoryBtn = document.getElementById('clearHistory');
+    const presetsList = document.getElementById('presetsList');
+    const savePresetBtn = document.getElementById('savePresetBtn');
+    
+    // Toast
+    const toast = document.getElementById('toast');
 
+    // State
     let currentType = 'url';
     let currentLogo = null;
     let qrCode = null;
-    let html5QrCode = null;
-    let isScanning = false;
+    let html5QrCode = null; // Scanner instance
+    let cameraOn = false;
     let deferredPrompt;
+    let currentLang = 'es';
 
-    // Toggle Gradient Section
-    useGradient.addEventListener('change', () => {
-        if(useGradient.checked) {
-            gradientSection.classList.remove('hidden');
-        } else {
-            gradientSection.classList.add('hidden');
-        }
-        if(autoGenToggle.checked) updateQR(true);
-    });
-
-    // PWA Install
-    const installBtn = document.getElementById('installApp');
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        installBtn.style.display = 'block';
-    });
-
-    installBtn.addEventListener('click', async () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') {
-                deferredPrompt = null;
-            }
-            installBtn.style.display = 'none';
-        }
-    });
-
-    // Service Worker
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(console.error);
+    // --- Helpers ---
+    function showToast(msg) {
+        toast.innerText = msg;
+        toast.className = "toast show";
+        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
     }
 
-    // Dark Mode
-    darkModeBtn.addEventListener('click', () => {
-        document.body.classList.toggle('dark-mode');
-        const isDark = document.body.classList.contains('dark-mode');
-        darkModeBtn.textContent = isDark ? '☀' : '🌙';
-        localStorage.setItem('darkMode', isDark);
-    });
+    // --- Initialization ---
 
-    if (localStorage.getItem('darkMode') === 'true') {
-        document.body.classList.add('dark-mode');
-        darkModeBtn.textContent = '☀';
-    }
-
-    // Tabs
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-
-            const target = tab.dataset.target;
-            currentType = target;
-            
-            forms.forEach(f => f.classList.remove('active'));
-            const activeForm = document.getElementById(`form-${target}`);
-            if (activeForm) activeForm.classList.add('active');
-            
-            const designSection = document.getElementById('designSection');
-            if (designSection) {
-                designSection.style.display = target === 'scan' ? 'none' : 'block';
-            }
-
-            if (target === 'scan') {
-                startScanner();
-            } else {
-                stopScanner();
-            }
-        });
-    });
-
-    // Scanner
-    function startScanner() {
-        if (isScanning) return;
-        
-        if (!html5QrCode) {
-            html5QrCode = new Html5Qrcode("reader");
-        }
-        
-        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-        
-        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
-        .then(() => {
-            isScanning = true;
-        })
-        .catch(err => {
-            isScanning = false;
-            let msg = "Error al iniciar cámara.";
-            if (err && err.toString().includes("NotFound")) {
-                msg = "📷 No se encontró ninguna cámara.";
-            } else if (err && err.toString().includes("NotAllowed")) {
-                msg = "🚫 Permiso denegado.";
-            }
-            const resEl = document.getElementById('scanResult');
-            if(resEl) resEl.innerText = msg;
-        });
-    }
-
-    function stopScanner() {
-        if (html5QrCode && isScanning) {
-            html5QrCode.stop().then(() => {
-                html5QrCode.clear();
-                isScanning = false;
-            }).catch(console.error);
-        }
-    }
-
-    function onScanSuccess(decodedText) {
-        const resEl = document.getElementById('scanResult');
-        if(resEl) resEl.innerText = decodedText;
-        
-        const copyBtn = document.getElementById('copyScanBtn');
-        if (copyBtn) {
-            copyBtn.style.display = 'inline-block';
-            copyBtn.onclick = () => {
-                navigator.clipboard.writeText(decodedText);
-                alert("¡Copiado!");
-            };
-        }
-    }
-
-    // QR Initialization
+    // QR Instance
     qrCode = new QRCodeStyling({
         width: 300,
         height: 300,
@@ -197,102 +100,110 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     qrCode.append(document.getElementById("qrcode"));
 
-    // Logo
-    logoInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = () => { currentLogo = reader.result; };
-            reader.readAsDataURL(file);
-        } else {
-            currentLogo = null;
-        }
-    });
-
-    // Helper: Data Builder
+    // Function to get data string based on current type
     function getQRData() {
         switch(currentType) {
-            case 'url':
-                return inputs.url.value.trim();
-            case 'text':
-                return inputs.text.value.trim();
+            case 'url': return inputs.url.value.trim();
+            case 'text': return inputs.text.value.trim();
             case 'wifi':
                 const ssid = inputs.ssid.value.trim();
                 const pass = inputs.pass.value.trim();
-                const type = inputs.wifiType.value;
                 if(!ssid) return null;
-                return `WIFI:S:${ssid};T:${type};P:${pass};;`;
+                return `WIFI:S:${ssid};T:${inputs.wifiType.value};P:${pass};;`;
             case 'vcard':
                 const n = inputs.vFn.value.trim();
                 const ln = inputs.vLn.value.trim();
-                const tel = inputs.vTel.value.trim();
-                const email = inputs.vEmail.value.trim();
                 if(!n && !ln) return null;
-                return `BEGIN:VCARD\nVERSION:3.0\nN:${ln};${n};;;\nFN:${n} ${ln}\nTEL;TYPE=CELL:${tel}\nEMAIL:${email}\nEND:VCARD`;
+                return `BEGIN:VCARD\nVERSION:3.0\nN:${ln};${n};;;\nFN:${n} ${ln}\nTEL;TYPE=CELL:${inputs.vTel.value}\nEMAIL:${inputs.vEmail.value}\nEND:VCARD`;
             case 'whatsapp':
                 const phone = inputs.waPhone.value.trim();
-                const msg = inputs.waMessage.value.trim();
                 if(!phone) return null;
-                return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+                return `https://wa.me/${phone}?text=${encodeURIComponent(inputs.waMessage.value)}`;
             case 'email':
                 const to = inputs.emailTo.value.trim();
-                const sub = inputs.emailSub.value.trim();
-                const body = inputs.emailBody.value.trim();
                 if(!to) return null;
-                return `mailto:${to}?subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(body)}`;
+                return `mailto:${to}?subject=${encodeURIComponent(inputs.emailSub.value)}&body=${encodeURIComponent(inputs.emailBody.value)}`;
             case 'event':
                 const title = inputs.eventTitle.value.trim();
                 if(!title) return null;
-                // Simple iCalendar format
                 const start = inputs.eventStart.value.replace(/[-:]/g, "") + "00";
                 const end = inputs.eventEnd.value.replace(/[-:]/g, "") + "00";
                 return `BEGIN:VEVENT\nSUMMARY:${title}\nLOCATION:${inputs.eventLoc.value}\nDTSTART:${start}\nDTEND:${end}\nEND:VEVENT`;
-            default:
-                return null;
+            case 'bulk':
+                const lines = inputs.bulk.value.trim().split('\n');
+                return lines.length > 0 && lines[0] !== "" ? lines : null;
+            default: return null;
         }
     }
 
-    // Generate/Update
-    function updateQR(fromAuto = false) {
+    // Core Update Function
+    async function updateQR(fromAuto = false) {
         const data = getQRData();
         
         if (!data) {
-            if(!fromAuto) alert("Por favor completa los campos necesarios.");
+            if(!fromAuto) showToast(currentLang === 'es' ? "Completa los campos." : "Fill required fields.");
+            // Don't clear QR, just return
             return;
         }
 
-        // Configurar opciones de puntos (color solido o gradiente)
-        let dotsOpt = {
-            type: dotsSelect.value
+        // Config Options
+        const options = {
+            image: currentLogo,
+            dotsOptions: {
+                type: dotsSelect.value,
+                color: dotsColor.value
+            },
+            cornersSquareOptions: { type: cornersSelect.value },
+            backgroundOptions: { color: bgColor.value },
+            qrOptions: { errorCorrectionLevel: errorLevel.value },
+            imageOptions: { 
+                crossOrigin: "anonymous", 
+                margin: parseInt(logoMargin.value),
+                imageSize: parseFloat(logoSize.value)
+            }
         };
 
+        // Gradient logic
         if(useGradient.checked) {
-            dotsOpt.gradient = {
+            options.dotsOptions.gradient = {
                 type: gradientType.value,
-                rotation: parseInt(gradientRotation.value) * (Math.PI / 180), // rad
+                rotation: parseInt(gradientRotation.value) * (Math.PI / 180),
                 colorStops: [
                     { offset: 0, color: dotsColor.value },
                     { offset: 1, color: gradientColor2.value }
                 ]
             };
-        } else {
-            dotsOpt.color = dotsColor.value;
         }
 
-        qrCode.update({
-            data: data,
-            image: currentLogo,
-            dotsOptions: dotsOpt,
-            cornersSquareOptions: {
-                type: cornersSelect.value
-            },
-            backgroundOptions: {
-                color: bgColor.value
-            },
-            qrOptions: {
-                errorCorrectionLevel: errorLevel.value
+        // BULK DOWNLOAD SHORTCUT
+        if (currentType === 'bulk') {
+            if (fromAuto) return; // Don't zip on type
+            
+            showToast("⏳ Generando ZIP...");
+            const zip = new JSZip();
+            const folder = zip.folder("v5-qrs");
+            
+            for (let i = 0; i < data.length; i++) {
+                const text = data[i].trim();
+                if(!text) continue;
+                // Update internal state without drawing to DOM to speed up? 
+                // Creating new instance is safer for async loops
+                const tempQR = new QRCodeStyling({ ...options, data: text, width: 500, height: 500 });
+                const blob = await tempQR.getRawData('png');
+                folder.file(`qr-${i+1}.png`, blob);
             }
-        });
+            
+            const content = await zip.generateAsync({type:"blob"});
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(content);
+            link.download = "qrs-bulk.zip";
+            link.click();
+            showToast("✅ ZIP Descargado");
+            return;
+        }
+
+        // Single Update
+        qrCode.update({ ...options, data: data });
 
         downloadBtn.disabled = false;
         shareBtn.disabled = false;
@@ -300,7 +211,83 @@ document.addEventListener('DOMContentLoaded', () => {
         if(!fromAuto && data) saveToHistory(data);
     }
 
+    // --- Scanner Logic ---
+    function startScanner() {
+        html5QrCode = new Html5Qrcode("reader");
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        
+        html5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            (decodedText) => {
+                scanResult.innerHTML = `Detectado: <a href="${decodedText}" target="_blank">${decodedText}</a>`;
+                showToast("✅ QR Detectado");
+                // play beep
+                // new Audio('beep.mp3').play().catch(()=>{}); 
+            },
+            () => {}
+        ).then(() => {
+            cameraOn = true;
+            flashBtn.classList.remove("hidden");
+        }).catch(err => {
+            scanResult.innerText = "Error acceso cámara: " + err;
+        });
+    }
+
+    function stopScanner() {
+        if (html5QrCode && cameraOn) {
+            html5QrCode.stop().then(() => {
+                cameraOn = false;
+                html5QrCode.clear();
+                flashBtn.classList.add("hidden");
+            }).catch(console.error);
+        }
+    }
+
+    // Flashlight
+    let isFlashOn = false;
+    flashBtn.addEventListener('click', () => {
+        if(!html5QrCode || !cameraOn) return;
+        isFlashOn = !isFlashOn;
+        html5QrCode.applyVideoConstraints({
+            advanced: [{ torch: isFlashOn }]
+        }).then(() => {
+            flashBtn.innerText = isFlashOn ? "🔦 OFF" : "🔦 ON";
+        });
+    });
+
+    // --- Event Listeners ---
+    
+    // Tabs
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            forms.forEach(f => f.classList.remove('active'));
+            const target = tab.dataset.target;
+            currentType = target;
+            
+            const activeForm = document.getElementById(`form-${target}`);
+            if(activeForm) activeForm.classList.add('active');
+
+            // Toggle Camera
+            if (target === 'scan') {
+                document.getElementById('generator-section').classList.add('hidden');
+                document.getElementById('scanner-section').classList.remove('hidden');
+                startScanner();
+            } else {
+                document.getElementById('generator-section').classList.remove('hidden');
+                document.getElementById('scanner-section').classList.add('hidden');
+                stopScanner();
+            }
+        });
+    });
+
+    generateBtn.addEventListener('click', () => updateQR(false));
+
     downloadBtn.addEventListener('click', () => {
+        if(currentType === 'bulk') return; 
         qrCode.download({ 
             name: `qr-${currentType}-${Date.now()}`, 
             extension: formatSelect.value 
@@ -308,43 +295,118 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     shareBtn.addEventListener('click', async () => {
-        if (!navigator.share) {
-            alert("Tu navegador no soporta compartir nativamente.");
-            return;
-        }
-        
+        if (!navigator.share) { showToast("No soportado"); return; }
         try {
             const blob = await qrCode.getRawData('png');
-            if (blob) {
-                const file = new File([blob], "qr.png", { type: "image/png" });
-                await navigator.share({
-                    title: 'Mi Código QR',
-                    text: 'Mira este QR generado con QR Gen',
-                    files: [file]
-                });
-            }
-        } catch (err) {
-            console.error(err);
+            const file = new File([blob], "qr.png", { type: "image/png" });
+            await navigator.share({
+                title: 'QR Code',
+                text: 'Creado con QR Gen',
+                files: [file]
+            });
+        } catch (e) { console.log(e); }
+    });
+
+    // Auto Gen
+    const triggerInputs = document.querySelectorAll('input, select, textarea');
+    triggerInputs.forEach(el => {
+        // Exclude specific inputs
+        if(el.id === 'downloadFormat' || el.id === 'logoInput' || el.type === 'file') return;
+        el.addEventListener('input', () => {
+            if(autoGenToggle.checked) updateQR(true);
+        });
+    });
+
+    // Logo
+    logoInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                currentLogo = reader.result;
+                updateQR(true);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            currentLogo = null;
+            updateQR(true);
         }
     });
 
-    // History
-    function saveToHistory(data) {
-        let history = JSON.parse(localStorage.getItem('qrHistory') || '[]');
-        const display = data.length > 40 ? data.substring(0, 40) + '...' : data;
+    // Presets Logic
+    function loadPresets() {
+        const presets = JSON.parse(localStorage.getItem('qrPresets') || '{}');
+        presetsList.innerHTML = '';
+        Object.keys(presets).forEach(key => {
+            const btn = document.createElement('button');
+            btn.className = 'tab-btn';
+            btn.style.fontSize = '0.8em';
+            btn.innerText = key;
+            btn.onclick = () => applyPreset(presets[key]);
+            btn.oncontextmenu = (e) => {
+                e.preventDefault();
+                if(confirm("¿Borrar preset?")) {
+                    delete presets[key];
+                    localStorage.setItem('qrPresets', JSON.stringify(presets));
+                    loadPresets();
+                }
+            };
+            presetsList.appendChild(btn);
+        });
+    }
+
+    savePresetBtn.addEventListener('click', () => {
+        const name = prompt("Nombre del estilo:");
+        if(!name) return;
+        const preset = {
+            dotsType: dotsSelect.value, dotsColor: dotsColor.value,
+            bgColor: bgColor.value, cornersType: cornersSelect.value,
+            useGradient: useGradient.checked, gradientType: gradientType.value,
+            gradientColor2: gradientColor2.value,
+            logoMargin: logoMargin.value, logoSize: logoSize.value
+        };
+        const presets = JSON.parse(localStorage.getItem('qrPresets') || '{}');
+        presets[name] = preset;
+        localStorage.setItem('qrPresets', JSON.stringify(presets));
+        loadPresets();
+        showToast("Preset guardado");
+    });
+
+    function applyPreset(p) {
+        dotsSelect.value = p.dotsType;
+        dotsColor.value = p.dotsColor;
+        bgColor.value = p.bgColor;
+        cornersSelect.value = p.cornersType;
+        useGradient.checked = p.useGradient;
         
+        if(p.useGradient) {
+            gradientSection.classList.remove('hidden');
+            gradientType.value = p.gradientType;
+            gradientColor2.value = p.gradientColor2;
+        } else {
+            gradientSection.classList.add('hidden');
+        }
+        logoMargin.value = p.logoMargin || 0;
+        logoSize.value = p.logoSize || 0.4;
+        updateQR(true);
+        showToast("Estilo cargado");
+    }
+
+    loadPresets();
+
+    // History Logic
+    function saveToHistory(data) {
+        if(currentType === 'bulk') return;
+        let history = JSON.parse(localStorage.getItem('qrHistory') || '[]');
         if (history.length > 0 && history[0].data === data) return;
 
-        let typeIcon = '🔗';
-        if(currentType === 'wifi') typeIcon = '📶';
-        else if(currentType === 'vcard') typeIcon = '👤';
-        else if(currentType === 'whatsapp') typeIcon = '💬';
-        else if(currentType === 'email') typeIcon = '📧';
-        else if(currentType === 'event') typeIcon = '📅';
-
-        history.unshift({ data: data, display: display, type: currentType, icon: typeIcon });
+        const display = data.length > 30 ? data.substring(0, 30) + '...' : data;
+        let icon = '🔗';
+        if(currentType === 'wifi') icon = '📶';
+        else if(currentType === 'vcard') icon = '👤';
+        
+        history.unshift({ data, display, icon });
         if (history.length > 10) history.pop();
-
         localStorage.setItem('qrHistory', JSON.stringify(history));
         renderHistory();
     }
@@ -352,39 +414,66 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderHistory() {
         let history = JSON.parse(localStorage.getItem('qrHistory') || '[]');
         historyList.innerHTML = '';
-
         history.forEach(item => {
             const li = document.createElement('li');
             li.className = 'history-item';
-            li.innerHTML = `<strong>${item.icon || '🔗'}</strong> ${item.display}`;
-            
-            li.addEventListener('click', () => {
-                qrCode.update({ data: item.data });
-            });
+            li.innerHTML = `<strong>${item.icon}</strong> ${item.display}`;
+            li.onclick = () => { qrCode.update({ data: item.data }); };
             historyList.appendChild(li);
         });
     }
 
-    clearHistoryBtn.addEventListener('click', () => {
+    clearHistoryBtn.onclick = () => {
         localStorage.removeItem('qrHistory');
         renderHistory();
-    });
-
-    generateBtn.addEventListener('click', () => updateQR(false));
-    
-    // Auto Gen Logic
-    const allInputs = document.querySelectorAll('input, select, textarea');
-    allInputs.forEach(el => {
-        // Skip some inputs that don't trigger regeneration
-        if(el.id === 'downloadFormat' || el.id === 'logoInput') return;
-        
-        el.addEventListener('input', () => {
-            if(autoGenToggle.checked) {
-                updateQR(true);
-            }
-        });
-    });
-
-    // Initial Render
+    };
     renderHistory();
+
+    // Language Toggle
+    const dict = {
+        es: { gen: "Generar Code", dl: "⬇ Descargar", sh: "🔗 Compartir" },
+        en: { gen: "Generate QR", dl: "⬇ Download", sh: "🔗 Share" }
+    };
+
+    langToggle.addEventListener('click', () => {
+        currentLang = currentLang === 'es' ? 'en' : 'es';
+        langToggle.innerText = currentLang === 'es' ? '🇪🇸' : '🇺🇸';
+        generateBtn.innerText = dict[currentLang].gen;
+        downloadBtn.innerText = dict[currentLang].dl;
+        shareBtn.innerText = dict[currentLang].sh;
+        showToast("Language changed");
+    });
+    
+    // Service Worker & PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(console.error);
+    }
+    const installBtn = document.getElementById('installApp');
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn.style.display = 'block';
+    });
+    installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt = null;
+            installBtn.style.display = 'none';
+        }
+    });
+    
+    // Dark Mode
+    if(localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
+        darkModeBtn.textContent = '☀';
+    }
+    darkModeBtn.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        darkModeBtn.textContent = isDark ? '☀' : '🌙';
+        localStorage.setItem('darkMode', isDark);
+    });
+
+    // Check query params used for initial state if needed
+    // End 
 });
