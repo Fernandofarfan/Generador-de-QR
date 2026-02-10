@@ -5,14 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de QR Ultimate</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
     <script type="text/javascript" src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
     <button id="darkModeToggle" class="mode-toggle">🌙</button>
+    <button id="installApp" class="install-btn" style="display: none;">📲 Instalar App</button>
 
     <div class="main-container">
         <div class="card editor-card">
-            <h1>Generador de QR <span class="badge">Ultimate</span></h1>
+            <h1>Generador de QR <span class="badge">V4</span></h1>
             
             <!-- Pestañas de Tipo -->
             <div class="tabs">
@@ -20,6 +24,7 @@
                 <button class="tab-btn" data-target="wifi">📶 WiFi</button>
                 <button class="tab-btn" data-target="text">📝 Texto</button>
                 <button class="tab-btn" data-target="vcard">👤 Contacto</button>
+                <button class="tab-btn scan-mode-btn" data-target="scan">📷 Escanear</button>
             </div>
 
             <!-- Formularios Dinámicos -->
@@ -82,47 +87,57 @@
                         <input type="email" id="vcardEmail" placeholder="juan@email.com">
                     </div>
                 </div>
+
+                <!-- Scanner Section (New) -->
+                <div class="form-section" id="form-scan">
+                     <div id="reader"></div>
+                     <p id="scanResult" class="scan-result">Esperando código...</p>
+                     <button id="copyScanBtn" style="display:none;" class="btn secondary">Copiar Resultado</button>
+                </div>
+
             </div>
 
-            <!-- Personalización Visual -->
-            <hr class="divider">
-            <h3>🎨 Diseño</h3>
+            <!-- Personalización Visual (Solo visible si no es scan) -->
+            <div id="designSection">
+                <hr class="divider">
+                <h3>🎨 Diseño</h3>
 
-            <div class="options-grid">
-                <div class="option-item">
-                    <label>Forma Puntos</label>
-                    <select id="dotsType">
-                        <option value="square">Cuadrados (Clásico)</option>
-                        <option value="rounded">Redondeados</option>
-                        <option value="dots">Puntitos</option>
-                        <option value="classy">Elegante</option>
-                        <option value="extra-rounded">Muy Redondo</option>
-                    </select>
+                <div class="options-grid">
+                    <div class="option-item">
+                        <label>Forma Puntos</label>
+                        <select id="dotsType">
+                            <option value="square">Cuadrados (Clásico)</option>
+                            <option value="rounded">Redondeados</option>
+                            <option value="dots">Puntitos</option>
+                            <option value="classy">Elegante</option>
+                            <option value="extra-rounded">Muy Redondo</option>
+                        </select>
+                    </div>
+                    <div class="option-item">
+                        <label>Forma Esquinas</label>
+                        <select id="cornersType">
+                            <option value="square">Cuadradas</option>
+                            <option value="dot">Punto</option>
+                            <option value="extra-rounded">Redondeadas</option>
+                        </select>
+                    </div>
+                    <div class="option-item">
+                        <label>Color Puntos</label>
+                        <input type="color" id="dotsColor" value="#000000">
+                    </div>
+                    <div class="option-item">
+                        <label>Color Fondo</label>
+                        <input type="color" id="bgColor" value="#ffffff">
+                    </div>
+                    <div class="option-item full-width">
+                        <label>Logo (Opcional)</label>
+                        <input type="file" id="logoInput" accept="image/*">
+                    </div>
                 </div>
-                <div class="option-item">
-                    <label>Forma Esquinas</label>
-                    <select id="cornersType">
-                        <option value="square">Cuadradas</option>
-                        <option value="dot">Punto</option>
-                        <option value="extra-rounded">Redondeadas</option>
-                    </select>
-                </div>
-                <div class="option-item">
-                    <label>Color Puntos</label>
-                    <input type="color" id="dotsColor" value="#000000">
-                </div>
-                <div class="option-item">
-                    <label>Color Fondo</label>
-                    <input type="color" id="bgColor" value="#ffffff">
-                </div>
-                <div class="option-item full-width">
-                    <label>Logo (Opcional)</label>
-                    <input type="file" id="logoInput" accept="image/*">
-                </div>
-            </div>
 
-            <div class="actions">
-                <button id="generateBtn" class="btn primary">Generar QR</button>
+                <div class="actions">
+                    <button id="generateBtn" class="btn primary">Generar QR</button>
+                </div>
             </div>
         </div>
 

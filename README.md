@@ -1,27 +1,26 @@
-# Generador de QR Ultimate (V3)
+# Generador de QR Ultimate (V4: PWA + Scanner)
 
-La herramienta definitiva para crear códigos QR directamente en tu navegador.
+Herramienta "Todo en Uno" para códigos QR. Funciona como una App nativa en tu celular.
 
-## Novedades V3
-*   **Múltiples Tipos:** 
-    *   🔗 **Enlaces:** Para sitios web.
-    *   📶 **WiFi:** Escanea para conectarte sin escribir la contraseña.
-    *   👤 **Contacto (VCard):** Agrega contactos al celular al instante.
-    *   📝 **Texto:** Muestra un mensaje simple.
-*   **Diseño Avanzado:**
-    *   Cambia la forma de los puntos (Cuadrados, Redondos, Elegantes).
-    *   Modifica bordes y esquinas.
-*   **Modo Oscuro:** 🌙 Botón para descansar la vista.
-*   **Formatos:** Descarga en PNG, JPEG, SVG o WEBP.
+## Novedades V4
+*   **📱 Modo App (PWA):** Instalá la herramienta en tu celular o PC y usala sin internet.
+*   **📷 Escáner Incorporado:** Usá tu cámara para leer códigos QR de otras personas.
+*   **Todo lo anterior:** WiFi, Texto, VCard, Colores, Logos, etc.
 
-## Instrucciones
-1. Abrí el archivo `index.html`.
-2. Elegí qué tipo de QR querés (arriba en las pestañas).
-3. Completá los datos.
-4. Personalizalo a tu gusto (colores, formas, logo).
-5. ¡Generar y Descargar!
+## Cómo Instalar (PWA)
+1. Abrí la web en Chrome o Edge.
+2. Buscá el botón que dice **"📲 Instalar App"** (o en el menú del navegador "Instalar Generador de QR").
+3. ¡Listo! Ahora la tenés en tu pantalla de inicio como una app real.
 
-> Aviso: Requiere conexión a internet para funcionar.
+## Cómo Publicar en Internet (GitHub Pages)
+Para que tus amigos puedan usarla desde sus celulares:
+1. Andá a tu repositorio en GitHub.
+2. Entrá en **Settings** (Configuración) > **Pages** (menú izquierda).
+3. En "Branch", seleccioná **None** y cambialo a **main**.
+4. Dale a **Save**.
+5. Esperá un minuto y te dará un link. ¡Ese link es tu app pública!
+
+> Hecho con ❤️ y JavaScript puro.
 
 ## Dudas frecuentes
 **¿Vencen los QR?**

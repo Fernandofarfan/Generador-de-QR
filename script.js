@@ -38,6 +38,34 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentType = 'url';
     let currentLogo = null;
     let qrCode = null;
+    let html5QrCode = null;
+    let deferredPrompt;
+
+    // --- 0. PWA Install Logic ---
+    const installBtn = document.getElementById('installApp');
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn.style.display = 'block';
+    });
+
+    installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                deferredPrompt = null;
+            }
+            installBtn.style.display = 'none';
+        }
+    });
+
+    // Registrar Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js')
+            .then(() => console.log('SW Registrado'));
+    }
 
     // --- 1. Dark Mode ---
     darkModeBtn.addEventListener('click', () => {
@@ -65,8 +93,57 @@ document.addEventListener('DOMContentLoaded', () => {
             
             forms.forEach(f => f.classList.remove('active'));
             document.getElementById(`form-${target}`).classList.add('active');
+            
+            // Toggle Design Section
+            const designSection = document.getElementById('designSection');
+            if (designSection) {
+                designSection.style.display = target === 'scan' ? 'none' : 'block';
+            }
+
+            // Manejar Scanner
+            if (target === 'scan') {
+                startScanner();
+            } else {
+                stopScanner();
+            }
         });
     });
+
+    // --- 2.5 Logic Scanner ---
+    function startScanner() {
+        if (!html5QrCode) {
+            html5QrCode = new Html5Qrcode("reader");
+        }
+        
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        
+        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
+        .catch(err => {
+            document.getElementById('scanResult').innerText = "Error al iniciar cámara: " + err;
+        });
+    }
+
+    function stopScanner() {
+        if (html5QrCode && html5QrCode.isScanning) {
+            html5QrCode.stop().then(() => {
+                html5QrCode.clear();
+            }).catch(err => console.error(err));
+        }
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+        document.getElementById('scanResult').innerText = decodedText;
+        const copyBtn = document.getElementById('copyScanBtn');
+        copyBtn.style.display = 'inline-block';
+        
+        copyBtn.onclick = () => {
+            navigator.clipboard.writeText(decodedText);
+            alert("¡Copiado al portapapeles!");
+        };
+        
+        // Opcional: Detener al escanear
+        // stopScanner(); 
+    }
 
     // --- 3. Inicializar QR ---
     qrCode = new QRCodeStyling({
