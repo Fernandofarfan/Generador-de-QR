@@ -1,26 +1,21 @@
-# Generador de QR Ultimate (V4: PWA + Scanner)
+# Generador de QR
 
-Herramienta "Todo en Uno" para códigos QR. Funciona como una App nativa en tu celular.
+Web app para crear QRs fácil. 
 
-## Novedades V4
-*   **📱 Modo App (PWA):** Instalá la herramienta en tu celular o PC y usala sin internet.
-*   **📷 Escáner Incorporado:** Usá tu cámara para leer códigos QR de otras personas.
-*   **Todo lo anterior:** WiFi, Texto, VCard, Colores, Logos, etc.
+Funciona para:
+* Links
+* WiFi
+* Contactos
+* Texto simple
 
-## Cómo Instalar (PWA)
-1. Abrí la web en Chrome o Edge.
-2. Buscá el botón que dice **"📲 Instalar App"** (o en el menú del navegador "Instalar Generador de QR").
-3. ¡Listo! Ahora la tenés en tu pantalla de inicio como una app real.
+También escanea QRs usando la cámara.
 
-## Cómo Publicar en Internet (GitHub Pages)
-Para que tus amigos puedan usarla desde sus celulares:
-1. Andá a tu repositorio en GitHub.
-2. Entrá en **Settings** (Configuración) > **Pages** (menú izquierda).
-3. En "Branch", seleccioná **None** y cambialo a **main**.
-4. Dale a **Save**.
-5. Esperá un minuto y te dará un link. ¡Ese link es tu app pública!
+## Uso
+Solo abrir `index.html` o entrar a la web. Todo funciona offline si la instalás.
 
-> Hecho con ❤️ y JavaScript puro.
+Se pueden cambiar colores y poner logos.
+
+> Repo simple en JS.
 
 ## Dudas frecuentes
 **¿Vencen los QR?**

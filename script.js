@@ -41,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let html5QrCode = null;
     let deferredPrompt;
 
-    // --- 0. PWA Install Logic ---
     const installBtn = document.getElementById('installApp');
     
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -61,13 +60,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Registrar Service Worker
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js')
-            .then(() => console.log('SW Registrado'));
+            .then(() => console.log('SW ok'));
     }
 
-    // --- 1. Dark Mode ---
     darkModeBtn.addEventListener('click', () => {
         document.body.classList.toggle('dark-mode');
         const isDark = document.body.classList.contains('dark-mode');
@@ -80,14 +77,11 @@ document.addEventListener('DOMContentLoaded', () => {
         darkModeBtn.textContent = '☀';
     }
 
-    // --- 2. Sistema de Pestañas ---
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            // Activar UI visual
             tabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
 
-            // Mostrar formulario correspondiente
             const target = tab.dataset.target;
             currentType = target;
             
@@ -180,7 +174,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 5. Construcción de Datos ---
     function getQRData() {
         switch(currentType) {
-            case 'url':
                 return inputs.url.value.trim();
             case 'text':
                 return inputs.text.value.trim();
@@ -207,12 +200,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateQR() {
         const data = getQRData();
         
+    function updateQR() {
+        const data = getQRData();
+        
         if (!data) {
-            alert("Por favor completa los campos necesarios para este tipo de QR.");
-            return;
-        }
-
-        qrCode.update({
+            alert("Faltan datos
             data: data,
             image: currentLogo,
             dotsOptions: {
@@ -236,16 +228,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const format = formatSelect.value;
         qrCode.download({ 
             name: `qr-${currentType}-${Date.now()}`, 
+    downloadBtn.addEventListener('click', () => {
+        const format = formatSelect.value;
+        qrCode.download({ 
+            name: `qr-${currentType}-${Date.now()}`, 
             extension: format 
         });
     });
-
-    // --- 8. Historial ---
-    function saveToHistory(data) {
-        let history = JSON.parse(localStorage.getItem('qrHistoryV3') || '[]');
-        
-        // Truncar texto largo para visualización
-        const display = data.length > 50 ? data.substring(0, 50) + '...' : data;
+a.length > 50 ? data.substring(0, 50) + '...' : data;
         
         if (history.length > 0 && history[0].data === data) return;
 
@@ -284,4 +274,5 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Init Hooks
     renderHistory();
-});
+});generateBtn.addEventListener('click', updateQR);
+    
