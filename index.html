@@ -3,21 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de QR</title>
+    <title>Generador de QR Pro</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Librería más potente para Logos y Colores -->
+    <script type="text/javascript" src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Generador de QR</h1>
-        <p>Ingresa un enlace para crear tu código QR</p>
-        
-        <div class="input-group">
-            <input type="text" id="urlInput" placeholder="https://ejemplo.com" autocomplete="off">
-            <button id="generateBtn">Generar QR</button>
+    <div class="main-container">
+        <div class="card editor-card">
+            <h1>Generador de QR <span class="badge">Pro</span></h1>
+            
+            <div class="input-group">
+                <label>Tu Enlace (URL)</label>
+                <input type="text" id="urlInput" placeholder="https://mi-sitio-web.com" autocomplete="off">
+            </div>
+
+            <div class="options-grid">
+                <div class="option-item">
+                    <label>Color Puntos</label>
+                    <input type="color" id="dotsColor" value="#000000">
+                </div>
+                <div class="option-item">
+                    <label>Color Fondo</label>
+                    <input type="color" id="bgColor" value="#ffffff">
+                </div>
+                <div class="option-item full-width">
+                    <label>Logo (Opcional)</label>
+                    <input type="file" id="logoInput" accept="image/*">
+                </div>
+            </div>
+
+            <div class="actions">
+                <button id="generateBtn" class="btn primary">Generar QR</button>
+            </div>
         </div>
 
-        <div id="qrcode"></div>
+        <div class="card preview-card">
+            <div id="qrcode"></div>
+            <div class="actions">
+                <button id="downloadBtn" class="btn secondary" disabled>⬇ Descargar Imagen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de Historial -->
+    <div class="history-container">
+        <h3>Historial Reciente</h3>
+        <ul id="historyList"></ul>
+        <button id="clearHistory" class="text-btn">Borrar historial</button>
     </div>
 
     <script src="script.js"></script>
