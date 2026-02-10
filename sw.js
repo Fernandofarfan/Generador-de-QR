@@ -4,8 +4,8 @@ const urlsToCache = [
   './style.css',
   './script.js',
   './manifest.json',
-  'https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js',
-  'https://unpkg.com/html5-qrcode'
+  './lib/qr-code-styling.js',
+  './lib/html5-qrcode.js'
 ];
 
 self.addEventListener('install', event => {
