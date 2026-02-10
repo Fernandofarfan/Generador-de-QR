@@ -1,136 +1,204 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Referencias al DOM
-    const urlInput = document.getElementById('urlInput');
+    // --- Referencias UI ---
+    // Tabs & Forms
+    const tabs = document.querySelectorAll('.tab-btn');
+    const forms = document.querySelectorAll('.form-section');
+    
+    // Inputs
+    const inputs = {
+        url: document.getElementById('urlInput'),
+        ssid: document.getElementById('wifiSSID'),
+        pass: document.getElementById('wifiPass'),
+        wifiType: document.getElementById('wifiType'),
+        text: document.getElementById('textInput'),
+        vFn: document.getElementById('vcardName'),
+        vLn: document.getElementById('vcardLastname'),
+        vTel: document.getElementById('vcardPhone'),
+        vEmail: document.getElementById('vcardEmail')
+    };
+
+    // Estilos
+    const dotsSelect = document.getElementById('dotsType');
+    const cornersSelect = document.getElementById('cornersType');
     const dotsColor = document.getElementById('dotsColor');
     const bgColor = document.getElementById('bgColor');
     const logoInput = document.getElementById('logoInput');
+    
+    // Botones
     const generateBtn = document.getElementById('generateBtn');
     const downloadBtn = document.getElementById('downloadBtn');
+    const formatSelect = document.getElementById('downloadFormat');
+    const darkModeBtn = document.getElementById('darkModeToggle');
+    
+    // Historial
     const historyList = document.getElementById('historyList');
     const clearHistoryBtn = document.getElementById('clearHistory');
 
+    // Estado local
+    let currentType = 'url';
     let currentLogo = null;
     let qrCode = null;
 
-    // 1. Inicializar la librería QRCodeStyling
-    // Documentación: https://qr-code-styling.com/
+    // --- 1. Dark Mode ---
+    darkModeBtn.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        darkModeBtn.textContent = isDark ? '☀' : '🌙';
+        localStorage.setItem('darkMode', isDark);
+    });
+
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
+        darkModeBtn.textContent = '☀';
+    }
+
+    // --- 2. Sistema de Pestañas ---
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Activar UI visual
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            // Mostrar formulario correspondiente
+            const target = tab.dataset.target;
+            currentType = target;
+            
+            forms.forEach(f => f.classList.remove('active'));
+            document.getElementById(`form-${target}`).classList.add('active');
+        });
+    });
+
+    // --- 3. Inicializar QR ---
     qrCode = new QRCodeStyling({
         width: 300,
         height: 300,
         type: "svg",
         data: "https://ejemplo.com",
         image: "",
-        dotsOptions: {
-            color: "#000000",
-            type: "rounded"
-        },
-        backgroundOptions: {
-            color: "#ffffff",
-        },
-        imageOptions: {
-            crossOrigin: "anonymous",
-            margin: 10
-        }
+        dotsOptions: { color: "#000000", type: "square" },
+        cornersSquareOptions: { type: "square" },
+        backgroundOptions: { color: "#ffffff" },
+        imageOptions: { crossOrigin: "anonymous", margin: 10 }
     });
-
-    // Renderizar QR inicial vacío o de ejemplo
     qrCode.append(document.getElementById("qrcode"));
 
-    // 2. Manejo de Logo
+    // --- 4. Manejo de Logo ---
     logoInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = () => {
-                currentLogo = reader.result;
-            };
+            reader.onload = () => { currentLogo = reader.result; };
             reader.readAsDataURL(file);
         } else {
             currentLogo = null;
         }
     });
 
-    // 3. Función Principal: Generar
+    // --- 5. Construcción de Datos ---
+    function getQRData() {
+        switch(currentType) {
+            case 'url':
+                return inputs.url.value.trim();
+            case 'text':
+                return inputs.text.value.trim();
+            case 'wifi':
+                const ssid = inputs.ssid.value.trim();
+                const pass = inputs.pass.value.trim();
+                const type = inputs.wifiType.value;
+                if(!ssid) return null;
+                return `WIFI:S:${ssid};T:${type};P:${pass};;`;
+            case 'vcard':
+                const n = inputs.vFn.value.trim();
+                const ln = inputs.vLn.value.trim();
+                const tel = inputs.vTel.value.trim();
+                const email = inputs.vEmail.value.trim();
+                if(!n && !ln) return null;
+                // Formato simple VCard 3.0
+                return `BEGIN:VCARD\nVERSION:3.0\nN:${ln};${n};;;\nFN:${n} ${ln}\nTEL;TYPE=CELL:${tel}\nEMAIL:${email}\nEND:VCARD`;
+            default:
+                return null;
+        }
+    }
+
+    // --- 6. Generar QR ---
     function updateQR() {
-        const url = urlInput.value.trim();
+        const data = getQRData();
         
-        if (!url) {
-            alert("Por favor escribe un enlace.");
+        if (!data) {
+            alert("Por favor completa los campos necesarios para este tipo de QR.");
             return;
         }
 
-        // Configurar opciones nuevas
         qrCode.update({
-            data: url,
+            data: data,
             image: currentLogo,
             dotsOptions: {
-                color: dotsColor.value
+                color: dotsColor.value,
+                type: dotsSelect.value
+            },
+            cornersSquareOptions: {
+                type: cornersSelect.value
             },
             backgroundOptions: {
                 color: bgColor.value
             }
         });
 
-        // Habilitar descarga
         downloadBtn.disabled = false;
-
-        // Guardar en historial
-        saveToHistory(url);
+        saveToHistory(data);
     }
 
-    // 4. Descargar
+    // --- 7. Descargar ---
     downloadBtn.addEventListener('click', () => {
-        qrCode.download({ name: "mi-qr", extension: "png" });
+        const format = formatSelect.value;
+        qrCode.download({ 
+            name: `qr-${currentType}-${Date.now()}`, 
+            extension: format 
+        });
     });
 
-    // 5. Historial (LocalStorage)
-    function saveToHistory(url) {
-        let history = JSON.parse(localStorage.getItem('qrHistory') || '[]');
+    // --- 8. Historial ---
+    function saveToHistory(data) {
+        let history = JSON.parse(localStorage.getItem('qrHistoryV3') || '[]');
         
-        // Evitar duplicados seguidos
-        if (history.length > 0 && history[0] === url) return;
-
-        // Agregar al inicio
-        history.unshift(url);
+        // Truncar texto largo para visualización
+        const display = data.length > 50 ? data.substring(0, 50) + '...' : data;
         
-        // Mantener solo últimos 5
-        if (history.length > 5) history.pop();
+        if (history.length > 0 && history[0].data === data) return;
 
-        localStorage.setItem('qrHistory', JSON.stringify(history));
+        history.unshift({ data: data, display: display, type: currentType });
+        if (history.length > 10) history.pop(); // Guardar ultimos 10
+
+        localStorage.setItem('qrHistoryV3', JSON.stringify(history));
         renderHistory();
     }
 
     function renderHistory() {
-        let history = JSON.parse(localStorage.getItem('qrHistory') || '[]');
+        let history = JSON.parse(localStorage.getItem('qrHistoryV3') || '[]');
         historyList.innerHTML = '';
 
-        history.forEach(url => {
+        history.forEach(item => {
             const li = document.createElement('li');
             li.className = 'history-item';
-            li.textContent = url;
-            li.title = "Click para cargar este link";
+            // Icono simple según tipo
+            const icon = item.type === 'wifi' ? '📶' : item.type === 'vcard' ? '👤' : '🔗';
+            li.innerHTML = `<strong>${icon}</strong> ${item.display}`;
             
-            // Al hacer clic en un item del historial, cargarlo
             li.addEventListener('click', () => {
-                urlInput.value = url;
-                updateQR();
+                alert("Nota: El historial solo muestra los datos crudos. Para editar, por favor ingresa los datos de nuevo.");
             });
-
             historyList.appendChild(li);
         });
     }
 
     clearHistoryBtn.addEventListener('click', () => {
-        localStorage.removeItem('qrHistory');
+        localStorage.removeItem('qrHistoryV3');
         renderHistory();
     });
 
-    // Event Listeners
+    // Event Listeners Globales
     generateBtn.addEventListener('click', updateQR);
-    urlInput.addEventListener('keypress', (e) => {
-        if(e.key === 'Enter') updateQR();
-    });
-
-    // Cargar historial al inicio
+    
+    // Init Hooks
     renderHistory();
 });

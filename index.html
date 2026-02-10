@@ -3,22 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de QR Pro</title>
+    <title>Generador de QR Ultimate</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Librería más potente para Logos y Colores -->
     <script type="text/javascript" src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
 </head>
 <body>
+    <button id="darkModeToggle" class="mode-toggle">🌙</button>
+
     <div class="main-container">
         <div class="card editor-card">
-            <h1>Generador de QR <span class="badge">Pro</span></h1>
+            <h1>Generador de QR <span class="badge">Ultimate</span></h1>
             
-            <div class="input-group">
-                <label>Tu Enlace (URL)</label>
-                <input type="text" id="urlInput" placeholder="https://mi-sitio-web.com" autocomplete="off">
+            <!-- Pestañas de Tipo -->
+            <div class="tabs">
+                <button class="tab-btn active" data-target="url">🔗 Link</button>
+                <button class="tab-btn" data-target="wifi">📶 WiFi</button>
+                <button class="tab-btn" data-target="text">📝 Texto</button>
+                <button class="tab-btn" data-target="vcard">👤 Contacto</button>
             </div>
 
+            <!-- Formularios Dinámicos -->
+            <div id="formsContainer">
+                
+                <!-- URL Form -->
+                <div class="form-section active" id="form-url">
+                    <div class="input-group">
+                        <label>Tu Enlace (URL)</label>
+                        <input type="text" id="urlInput" placeholder="https://mi-sitio-web.com" autocomplete="off">
+                    </div>
+                </div>
+
+                <!-- WiFi Form -->
+                <div class="form-section" id="form-wifi">
+                    <div class="input-group">
+                        <label>Nombre de Red (SSID)</label>
+                        <input type="text" id="wifiSSID" placeholder="Ej: MiCasa_5G">
+                    </div>
+                    <div class="input-group">
+                        <label>Contraseña</label>
+                        <input type="password" id="wifiPass" placeholder="Contraseña del WiFi">
+                    </div>
+                    <div class="input-group">
+                        <label>Seguridad</label>
+                        <select id="wifiType">
+                            <option value="WPA">WPA/WPA2</option>
+                            <option value="WEP">WEP</option>
+                            <option value="nopass">Sin Contraseña</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Texto Form -->
+                <div class="form-section" id="form-text">
+                    <div class="input-group">
+                        <label>Mensaje de Texto</label>
+                        <textarea id="textInput" rows="4" placeholder="Escribe lo que quieras..."></textarea>
+                    </div>
+                </div>
+
+                <!-- VCard Form -->
+                <div class="form-section" id="form-vcard">
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>Nombre</label>
+                            <input type="text" id="vcardName" placeholder="Juan">
+                        </div>
+                        <div class="input-group">
+                            <label>Apellido</label>
+                            <input type="text" id="vcardLastname" placeholder="Pérez">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Teléfono</label>
+                        <input type="tel" id="vcardPhone" placeholder="+54 9 11 1234 5678">
+                    </div>
+                    <div class="input-group">
+                        <label>Email</label>
+                        <input type="email" id="vcardEmail" placeholder="juan@email.com">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personalización Visual -->
+            <hr class="divider">
+            <h3>🎨 Diseño</h3>
+
             <div class="options-grid">
+                <div class="option-item">
+                    <label>Forma Puntos</label>
+                    <select id="dotsType">
+                        <option value="square">Cuadrados (Clásico)</option>
+                        <option value="rounded">Redondeados</option>
+                        <option value="dots">Puntitos</option>
+                        <option value="classy">Elegante</option>
+                        <option value="extra-rounded">Muy Redondo</option>
+                    </select>
+                </div>
+                <div class="option-item">
+                    <label>Forma Esquinas</label>
+                    <select id="cornersType">
+                        <option value="square">Cuadradas</option>
+                        <option value="dot">Punto</option>
+                        <option value="extra-rounded">Redondeadas</option>
+                    </select>
+                </div>
                 <div class="option-item">
                     <label>Color Puntos</label>
                     <input type="color" id="dotsColor" value="#000000">
@@ -40,8 +128,15 @@
 
         <div class="card preview-card">
             <div id="qrcode"></div>
-            <div class="actions">
-                <button id="downloadBtn" class="btn secondary" disabled>⬇ Descargar Imagen</button>
+            
+            <div class="download-section">
+                <select id="downloadFormat" class="format-select">
+                    <option value="png">PNG</option>
+                    <option value="jpeg">JPEG</option>
+                    <option value="svg">SVG</option>
+                    <option value="webp">WEBP</option>
+                </select>
+                <button id="downloadBtn" class="btn secondary" disabled>⬇ Descargar</button>
             </div>
         </div>
     </div>

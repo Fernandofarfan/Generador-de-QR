@@ -1,21 +1,27 @@
-# Generador de Links a QR Pro
+# Generador de QR Ultimate (V3)
 
-Herramienta completa para crear códigos QR personalizados. Funciona en tu navegador sin instalar nada.
+La herramienta definitiva para crear códigos QR directamente en tu navegador.
 
-## Funciones
-* **Personalizable:** Cambiá el color del fondo y de los puntos.
-* **Logo:** Podés subir tu propia imagen para que aparezca en el centro.
-* **Descarga:** Guardá el QR como imagen PNG lista para imprimir o compartir.
-* **Historial:** Guarda tus últimos 5 links para no perderlos.
+## Novedades V3
+*   **Múltiples Tipos:** 
+    *   🔗 **Enlaces:** Para sitios web.
+    *   📶 **WiFi:** Escanea para conectarte sin escribir la contraseña.
+    *   👤 **Contacto (VCard):** Agrega contactos al celular al instante.
+    *   📝 **Texto:** Muestra un mensaje simple.
+*   **Diseño Avanzado:**
+    *   Cambia la forma de los puntos (Cuadrados, Redondos, Elegantes).
+    *   Modifica bordes y esquinas.
+*   **Modo Oscuro:** 🌙 Botón para descansar la vista.
+*   **Formatos:** Descarga en PNG, JPEG, SVG o WEBP.
 
 ## Instrucciones
 1. Abrí el archivo `index.html`.
-2. Pegá el link.
-3. (Opcional) Elegí colores o subí tu logo.
-4. Dale al botón "Generar QR".
-5. Si te gusta, descargalo con el botón de abajo.
+2. Elegí qué tipo de QR querés (arriba en las pestañas).
+3. Completá los datos.
+4. Personalizalo a tu gusto (colores, formas, logo).
+5. ¡Generar y Descargar!
 
-> Aviso: Necesitás internet para que cargue la librería.
+> Aviso: Requiere conexión a internet para funcionar.
 
 ## Dudas frecuentes
 **¿Vencen los QR?**
