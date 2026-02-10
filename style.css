@@ -375,3 +375,5 @@ input[type="color"] {
         order: 1;
     }
 }
+.hidden { display: none !important; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }

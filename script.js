@@ -20,22 +20,34 @@ document.addEventListener('DOMContentLoaded', () => {
         // Email
         emailTo: document.getElementById('emailTo'),
         emailSub: document.getElementById('emailSub'),
-        emailBody: document.getElementById('emailBody')
+        emailBody: document.getElementById('emailBody'),
+        // Event
+        eventTitle: document.getElementById('eventTitle'),
+        eventLoc: document.getElementById('eventLoc'),
+        eventStart: document.getElementById('eventStart'),
+        eventEnd: document.getElementById('eventEnd')
     };
 
     const dotsSelect = document.getElementById('dotsType');
     const cornersSelect = document.getElementById('cornersType');
     const dotsColor = document.getElementById('dotsColor');
     const bgColor = document.getElementById('bgColor');
-    const errorLevel = document.getElementById('errorLevel'); // New
+    const errorLevel = document.getElementById('errorLevel');
     const logoInput = document.getElementById('logoInput');
+
+    // Gradient Inputs
+    const useGradient = document.getElementById('useGradient');
+    const gradientSection = document.getElementById('gradientSection');
+    const gradientType = document.getElementById('gradientType');
+    const gradientColor2 = document.getElementById('gradientColor2');
+    const gradientRotation = document.getElementById('gradientRotation');
     
     const generateBtn = document.getElementById('generateBtn');
     const downloadBtn = document.getElementById('downloadBtn');
-    const shareBtn = document.getElementById('shareBtn'); // New
+    const shareBtn = document.getElementById('shareBtn');
     const formatSelect = document.getElementById('downloadFormat');
     const darkModeBtn = document.getElementById('darkModeToggle');
-    const autoGenToggle = document.getElementById('autoGenToggle'); // New
+    const autoGenToggle = document.getElementById('autoGenToggle');
     
     const historyList = document.getElementById('historyList');
     const clearHistoryBtn = document.getElementById('clearHistory');
@@ -46,6 +58,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let html5QrCode = null;
     let isScanning = false;
     let deferredPrompt;
+
+    // Toggle Gradient Section
+    useGradient.addEventListener('change', () => {
+        if(useGradient.checked) {
+            gradientSection.classList.remove('hidden');
+        } else {
+            gradientSection.classList.add('hidden');
+        }
+        if(autoGenToggle.checked) updateQR(true);
+    });
 
     // PWA Install
     const installBtn = document.getElementById('installApp');
@@ -218,6 +240,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const body = inputs.emailBody.value.trim();
                 if(!to) return null;
                 return `mailto:${to}?subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(body)}`;
+            case 'event':
+                const title = inputs.eventTitle.value.trim();
+                if(!title) return null;
+                // Simple iCalendar format
+                const start = inputs.eventStart.value.replace(/[-:]/g, "") + "00";
+                const end = inputs.eventEnd.value.replace(/[-:]/g, "") + "00";
+                return `BEGIN:VEVENT\nSUMMARY:${title}\nLOCATION:${inputs.eventLoc.value}\nDTSTART:${start}\nDTEND:${end}\nEND:VEVENT`;
             default:
                 return null;
         }
@@ -232,13 +261,28 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Configurar opciones de puntos (color solido o gradiente)
+        let dotsOpt = {
+            type: dotsSelect.value
+        };
+
+        if(useGradient.checked) {
+            dotsOpt.gradient = {
+                type: gradientType.value,
+                rotation: parseInt(gradientRotation.value) * (Math.PI / 180), // rad
+                colorStops: [
+                    { offset: 0, color: dotsColor.value },
+                    { offset: 1, color: gradientColor2.value }
+                ]
+            };
+        } else {
+            dotsOpt.color = dotsColor.value;
+        }
+
         qrCode.update({
             data: data,
             image: currentLogo,
-            dotsOptions: {
-                color: dotsColor.value,
-                type: dotsSelect.value
-            },
+            dotsOptions: dotsOpt,
             cornersSquareOptions: {
                 type: cornersSelect.value
             },
@@ -252,8 +296,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         downloadBtn.disabled = false;
         shareBtn.disabled = false;
-        // Sólo guardar histórico si es manual o cada X tiempo (aqui lo dejamos manual)
-        if(!fromAuto) saveToHistory(data);
+        
+        if(!fromAuto && data) saveToHistory(data);
     }
 
     downloadBtn.addEventListener('click', () => {
@@ -289,13 +333,14 @@ document.addEventListener('DOMContentLoaded', () => {
         let history = JSON.parse(localStorage.getItem('qrHistory') || '[]');
         const display = data.length > 40 ? data.substring(0, 40) + '...' : data;
         
-        if (history.length > 0 && history[0].data === data) return; // No dupes recent
+        if (history.length > 0 && history[0].data === data) return;
 
         let typeIcon = '🔗';
         if(currentType === 'wifi') typeIcon = '📶';
         else if(currentType === 'vcard') typeIcon = '👤';
         else if(currentType === 'whatsapp') typeIcon = '💬';
         else if(currentType === 'email') typeIcon = '📧';
+        else if(currentType === 'event') typeIcon = '📅';
 
         history.unshift({ data: data, display: display, type: currentType, icon: typeIcon });
         if (history.length > 10) history.pop();
