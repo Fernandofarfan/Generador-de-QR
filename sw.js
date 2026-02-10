@@ -1,4 +1,4 @@
-const CACHE_NAME = 'qr-suite-v7-fix';
+const CACHE_NAME = 'qr-suite-v8-final';
 const urlsToCache = [
   './',
   './index.html',
@@ -6,7 +6,7 @@ const urlsToCache = [
   './script.js',
   './manifest.json',
   './lib/qr-code-styling.js',
-  './lib/html5-qrcode.js',
+  './lib/html5-qrcode.min.js',
   './lib/jszip.min.js',
   './lib/jspdf.umd.min.js'
 ];
