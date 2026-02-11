@@ -6,7 +6,7 @@
     <title>QR Suite Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="style.css?v=9">
+    <link rel="stylesheet" href="style.css?v=11">
     <!-- Libraries -->
     <script src="lib/qr-code-styling.js"></script>
     <script src="lib/html5-qrcode.min.js"></script>
@@ -333,7 +333,12 @@
     <!-- TOAST -->
     <div id="toast"></div>
 
-    <script src="script.js?v=9"></script>
+    <script>
+        window.onerror = function(msg, url, line) {
+            alert("Error: " + msg + "\nLine: " + line);
+        };
+    </script>
+    <script src="script.js?v=11"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').then(reg => {

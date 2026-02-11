@@ -1,4 +1,4 @@
-const CACHE_NAME = 'qr-suite-v9-features';
+const CACHE_NAME = 'qr-suite-v11-force';
 const urlsToCache = [
   './',
   './index.html',
