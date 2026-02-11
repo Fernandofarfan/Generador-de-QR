@@ -6,7 +6,7 @@
     <title>QR Suite Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=9">
     <!-- Libraries -->
     <script src="lib/qr-code-styling.js"></script>
     <script src="lib/html5-qrcode.min.js"></script>
@@ -333,6 +333,24 @@
     <!-- TOAST -->
     <div id="toast"></div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=9"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').then(reg => {
+                console.log('SW registrado:', reg.scope);
+                reg.onupdatefound = () => {
+                    const installingWorker = reg.installing;
+                    installingWorker.onstatechange = () => {
+                        if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // New content available
+                            if(confirm("Nueva actualización disponible. ¿Recargar?")) {
+                                window.location.reload();
+                            }
+                        }
+                    };
+                };
+            }).catch(console.error);
+        }
+    </script>
 </body>
 </html>
